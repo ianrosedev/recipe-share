@@ -4,12 +4,21 @@
   "description": "Server for recipe-share",
   "author": "Ian Rose",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ianrosedev/recipe-share.git"
+  },
+  "homepage": "https://github.com/ianrosedev/recipe-share",
+  "bugs": {
+    "url": "https://github.com/ianrosedev/recipe-share/issues"
+  },
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "body-parser": "^1.18.3",
-    "express": "^4.16.3"
+    "express": "^4.16.3",
+    "morgan": "^1.9.0"
   }
 }
