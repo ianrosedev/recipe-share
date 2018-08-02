@@ -1,15 +1,17 @@
 import { Router } from 'express';
 const router = Router();
-import usersRouter from './users/router';
-import recipesRouter from './recipes/router';
-import reviewsRouter from './reviews/router';
-import imagesRouter from './images/router';
-import collectionsRouter from './collections/router';
+import userRouter from './user/router';
+import recipeRouter from './recipe/router';
+import reviewRouter from './review/router';
+import imageRouter from './image/router';
+import collectionRouter from './collection/router';
+import noteRouter from './note/router';
 
-router.use('/users', usersRouter);
-router.use('/recipes', recipesRouter);
-router.use('/reviews', reviewsRouter);
-router.use('/images', imagesRouter);
-router.use('/collections', collectionsRouter);
+router.use('/users', userRouter);
+router.use('/recipes', recipeRouter);
+router.use('/reviews', reviewRouter);
+router.use('/images', imageRouter);
+router.use('/collections', collectionRouter);
+router.use('/notes', noteRouter);
 
 export default router;

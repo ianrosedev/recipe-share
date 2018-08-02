@@ -2,7 +2,8 @@ import { Router } from 'express';
 const router = Router();
 
 router.route('/')
-  .get(/* TODO */);
+  .get(/* TODO */)
+  .post(/* TODO */);
 
 router.route('/:id')
   .get(/* TODO */)
