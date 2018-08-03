@@ -1,3 +1,6 @@
-import app from './server/index';
+import app from './server';
+import config from './server/config';
 
-app.listen(3000, () => console.log('listening on port 3000'));
+app.listen(config.port, () => {
+  console.log('🚀  listening on port:', config.port);
+});

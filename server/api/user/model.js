@@ -14,7 +14,8 @@ const schema = new Schema(
     },
     password: {
       type: String,
-      required: true
+      required: true,
+      select: false
     },
     images: [Schema.Types.ObjectId],
     recipes: [Schema.Types.ObjectId],
@@ -26,5 +27,13 @@ const schema = new Schema(
     timestamps: true
   }
 );
+
+schema.methods = {
+  sanitize() {
+    const obj = this.toObject();
+    delete obj.password;
+    return obj;
+  }
+};
 
 export default mongoose.model('User', schema);

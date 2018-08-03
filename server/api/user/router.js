@@ -1,8 +1,9 @@
 import { Router } from 'express';
 const router = Router();
+import controller from './controller';
 
 router.route('/')
-  .post(/* TODO */)
+  .post(controller.createUser)
   .put(/* TODO */)
   .delete(/* TODO */);
 
