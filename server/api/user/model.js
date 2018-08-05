@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
+import bcrypt from 'bcrypt';
 
 const schema = new Schema(
   {
@@ -33,6 +34,14 @@ schema.methods = {
     const obj = this.toObject();
     delete obj.password;
     return obj;
+  },
+  authenticatePassword(plaintextPassword) {
+    // Returns promise
+    return bcrypt.compare(plaintextPassword, this.password);
+  },
+  hashPassword(plaintextPassword) {
+    // Returns promise
+    return bcrypt.hash(plaintextPassword, 12);
   }
 };
 

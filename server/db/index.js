@@ -8,7 +8,7 @@ export default async (config = appConfig) => {
     const connected = await mongoose.connect(config.db.url);
 
     if (connected === mongoose) {
-      console.log('🎉  connected to DB');
+      console.log('🎉  connected to DB at:', appConfig.db.url);
     }
   }
   catch (err) {

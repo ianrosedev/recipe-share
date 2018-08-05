@@ -1,8 +1,10 @@
 import { Router } from 'express';
 const router = Router();
+import controller from './controller';
+import { verifyLoginEmail } from './auth';
 
 router.route('/login')
-  .get(/* TODO */);
+  .post(verifyLoginEmail(), controller.login);
 
 router.route('/logout')
   .post(/* TODO */);
