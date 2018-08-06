@@ -1,4 +1,4 @@
-import deepMerge from 'deepmerge';
+import merge from 'lodash.merge';
 import development from './development';
 import testing from './testing';
 import production from './production';
@@ -26,4 +26,4 @@ switch (env) {
     envConfig = development;
 }
 
-export default deepMerge(baseConfig, envConfig);
+export default merge(baseConfig, envConfig);

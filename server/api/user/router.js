@@ -1,17 +1,18 @@
 import { Router } from 'express';
 const router = Router();
 import controller from './controller';
+import { checkToken, verifyUser } from '../../auth/auth';
 
 router.route('/')
-  .post(controller.createUser)
-  .put(/* TODO */)
-  .delete(/* TODO */);
+  .post(controller.userCreate)
+  .put(checkToken(), verifyUser(), controller.userUpdate)
+  .delete(checkToken(), verifyUser(), controller.userDestroy);
 
 router.route('/me')
-  .get(/* TODO */);
+  .get(checkToken(), verifyUser(), controller.userMeRead);
 
 router.route('/:id')
-  .get(/* TODO */);
+  .get(controller.userIdRead);
 
 router.route('/:id/recipes')
   .get(/* TODO */);

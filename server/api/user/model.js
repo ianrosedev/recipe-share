@@ -11,13 +11,17 @@ const schema = new Schema(
     },
     email: {
       type: String,
-      required: true
+      required: true,
+      select: false
     },
     password: {
       type: String,
       required: true,
       select: false
     },
+    location: String,
+    snippet: String,
+    profileImage: String,
     images: [Schema.Types.ObjectId],
     recipes: [Schema.Types.ObjectId],
     collections: [Schema.Types.ObjectId],

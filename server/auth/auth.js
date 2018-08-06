@@ -21,7 +21,7 @@ export const checkToken = () => {
 
 export const verifyUser = () => async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user._id);
 
     if (!user) {
       res.status(401).json({ message: 'Unauthorized' });
@@ -45,7 +45,7 @@ export const verifyLoginEmail = () => async (req, res, next) => {
   }
 
   try {
-    const user = await User.findOne({ email }).select('+password');
+    const user = await User.findOne({ email }).select('+password +email');
 
     if (!user) {
       res.status(401).json({ message: 'No user with the given username' });

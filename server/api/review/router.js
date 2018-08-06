@@ -1,8 +1,9 @@
 import { Router } from 'express';
 const router = Router();
+import controller from './controller';
 
 router.route('/')
-  .get(/* TODO */);
+  .get(controller.reviewRead);
 
 router.route('/:id')
   .get(/* TODO */)
