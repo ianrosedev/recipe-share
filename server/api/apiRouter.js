@@ -1,11 +1,11 @@
 import { Router } from 'express';
 const router = Router();
-import userRouter from './user/router';
-import recipeRouter from './recipe/router';
-import reviewRouter from './review/router';
-import imageRouter from './image/router';
-import collectionRouter from './collection/router';
-import noteRouter from './note/router';
+import userRouter from './user/userRouter';
+import recipeRouter from './recipe/recipeRouter';
+import reviewRouter from './review/reviewRouter';
+import imageRouter from './image/imageRouter';
+import collectionRouter from './collection/collectionRouter';
+import noteRouter from './note/noteRouter';
 
 router.use('/users', userRouter);
 router.use('/recipes', recipeRouter);

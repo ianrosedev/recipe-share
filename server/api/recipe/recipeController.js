@@ -1,15 +1,50 @@
 import mongoose from 'mongoose';
 const { ObjectId } = mongoose.Types;
-import Recipe from './model';
-import User from '../user/model';
-import Review from '../review/model';
+import Recipe from './recipeModel';
+import User from '../user/userModel';
+import Review from '../review/reviewModel';
+import { populateAndSort } from '../../helpers/query';
 
-const recipeCreate = async (req, res, next) => {
+const recipeGet = async (req, res, next) => {
   try {
-    const user = req.user;
+    const recipe = await Recipe.findById(req.params.id);
+
+    res.json({ recipe });
+  }
+  catch (err) {
+    next(err);
+  }
+};
+
+const recipeGetAll = async (req, res, next) => {
+  try {
+    // WIP: Query parameters
+    // Abstract and move when done
+    const query = req.query;
+    const sorting = {};
+
+    if (query.createdAt) sorting.createdAt = query.createdAt;
+    if (query.rating) sorting.rating = query.rating;
+
+    const recipes = await Recipe
+      .find({})
+      .sort(sorting)
+      .skip(Number(query.offset))
+      .limit(Number(query.limit) || 10);
+
+    res.json({ recipes });
+  }
+  catch (err) {
+    next(err);
+  }
+};
+
+const recipePost = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
     const recipeWithAuthor = {
       ...req.body,
-      author: new ObjectId(user._id)
+      author: new ObjectId(userId)
     };
     const newRecipe = new Recipe(recipeWithAuthor);
     const createdRecipe = await newRecipe.save();
@@ -20,7 +55,7 @@ const recipeCreate = async (req, res, next) => {
     }
 
     const updatedUser = await User.findByIdAndUpdate(
-      user._id,
+      userId,
       { $push: { recipes: new ObjectId(createdRecipe._id) } },
       { new: true }
     );
@@ -37,47 +72,13 @@ const recipeCreate = async (req, res, next) => {
   }
 };
 
-const recipeRead = async (req, res, next) => {
+const recipePut = async (req, res, next) => {
   try {
-    // WIP: Query parameters
-    // Abstract and move when done
-    const query = req.query;
-    const sorting = {};
-
-    if (query.createdAt) sorting.createdAt = query.createdAt;
-    if (query.rating) sorting.rating = query.rating;
-
-    const recipes = await Recipe
-      .find({})
-      .sort(sorting)
-      .skip(query.offset)
-      .limit(query.limit || 5);
-
-    res.json(recipes);
-  }
-  catch (err) {
-    next(err);
-  }
-};
-
-const recipeIdRead = async (req, res, next) => {
-  try {
-    const recipe = await Recipe.findById(req.params.id);
-
-    res.json(recipe);
-  }
-  catch (err) {
-    next(err);
-  }
-};
-
-const recipeIdUpdate = async (req, res, next) => {
-  try {
-    const user = req.user;
+    const userId = req.user._id;
     const recipeId = req.params.id;
     const recipeToUpdate = await Recipe.findById(recipeId).select('author');
 
-    if (!user._id.equals(recipeToUpdate.author)) {
+    if (!userId.equals(recipeToUpdate.author)) {
       res.status(400).json({ message: 'Not authorized to update this recipe!' });
       return;
     }
@@ -88,18 +89,18 @@ const recipeIdUpdate = async (req, res, next) => {
       { new: true }
     );
 
-    res.json(updatedRecipe);
+    res.json({ recipe: updatedRecipe });
   }
   catch (err) {
     next(err);
   }
 };
 
-const recipeIdDestroy = async (req, res, next) => {
+const recipeDelete = async (req, res, next) => {
   // TODO: Need to destroy all references to this
   // from the other related documents
   try {
-    const user = req.user;
+    const userId = req.user._id;
     const recipeId = req.params.id;
     const recipeToDestroy = await Recipe.findById(recipeId).select('author');
 
@@ -108,33 +109,48 @@ const recipeIdDestroy = async (req, res, next) => {
       return;
     }
 
-    if (!user._id.equals(recipeToDestroy.author)) {
+    if (!userId.equals(recipeToDestroy.author)) {
       res.status(400).json({ message: 'Not authorized to delete this recipe!' });
       return;
     }
 
     const destroyedRecipe = await recipeToDestroy.remove();
     const updatedUser = await User.findByIdAndUpdate(
-      user._id,
+      userId,
       { $pull: { recipes: recipeId } },
       { new: true }
     );
 
-    res.json({ updatedUser, destroyed: destroyedRecipe._id });
+    res.json({ user: updatedUser, destroyed: destroyedRecipe._id });
   }
   catch (err) {
     next(err);
   }
 };
 
-const recipeIdReviewCreate = async (req, res, next) => {
+const recipeReviewsGet = async (req, res, next) => {
   try {
-    const user = req.user;
+    const recipeReviews = await populateAndSort(req, res, next, {
+      model: Recipe,
+      path: 'reviews'
+    });
+
+    res.json(recipeReviews);
+  }
+  catch (err) {
+    next(err);
+  }
+};
+
+const recipeReviewsPost = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
     const recipeId = req.params.id;
     const userReview = {
-      userId: user._id,
+      userId,
       recipeId,
-      text: req.body.text
+      text: req.body.text,
+      rating: Number(req.body.rating)
     };
     const recipeToReview = await Recipe.findById(recipeId);
 
@@ -157,7 +173,7 @@ const recipeIdReviewCreate = async (req, res, next) => {
     }
 
     const updatedUser = await User.findByIdAndUpdate(
-      user._id,
+      userId,
       { $push: { reviews: createdReview._id } },
       { new: true }
     );
@@ -179,10 +195,11 @@ const recipeIdReviewCreate = async (req, res, next) => {
 };
 
 export default {
-  recipeCreate,
-  recipeRead,
-  recipeIdRead,
-  recipeIdUpdate,
-  recipeIdDestroy,
-  recipeIdReviewCreate
+  recipeGet,
+  recipeGetAll,
+  recipePost,
+  recipePut,
+  recipeDelete,
+  recipeReviewsGet,
+  recipeReviewsPost
 };

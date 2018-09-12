@@ -30,11 +30,15 @@ const schema = new Schema(
     }],
     rating: {
       type: Number,
-      min: 0,
+      min: 1,
       max: 5,
-      default: 0
+      default: 5,
+      required: true
     },
-    reviews: [Schema.Types.ObjectId]
+    reviews: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Review'
+    }]
   },
   {
     timestamps: true

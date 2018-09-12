@@ -18,9 +18,9 @@
     "start": "node -r esm index.js"
   },
   "dependencies": {
-    "esm": "^3.0.72"
+    "esm": "^3.0.82"
   },
   "devDependencies": {
-    "nodemon": "^1.18.3"
+    "nodemon": "^1.18.4"
   }
 }

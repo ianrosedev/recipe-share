@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import expressJwt from 'express-jwt';
 import config from '../config';
-import User from '../api/user/model';
+import User from '../api/user/userModel';
 
 export const signToken = (id, expireTime = config.expireTime) => {
   return jwt.sign(
@@ -11,15 +11,13 @@ export const signToken = (id, expireTime = config.expireTime) => {
   );
 };
 
-export const checkToken = () => {
-  return (req, res, next) => {
-    const check = expressJwt({ secret: config.secrets.jwt });
-    // Returns middleware
-    check(req, res, next);
-  };
+export const checkToken = (req, res, next) => {
+  const check = expressJwt({ secret: config.secrets.jwt });
+  // Returns middleware
+  check(req, res, next);
 };
 
-export const verifyUser = () => async (req, res, next) => {
+export const verifyUser = async (req, res, next) => {
   try {
     const user = await User.findById(req.user._id);
 
@@ -35,7 +33,7 @@ export const verifyUser = () => async (req, res, next) => {
   }
 };
 
-export const verifyLoginEmail = () => async (req, res, next) => {
+export const verifyLoginEmail = async (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
 

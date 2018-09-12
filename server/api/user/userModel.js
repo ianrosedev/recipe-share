@@ -23,9 +23,15 @@ const schema = new Schema(
     snippet: String,
     profileImage: String,
     images: [Schema.Types.ObjectId],
-    recipes: [Schema.Types.ObjectId],
+    recipes: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Recipe'
+    }],
     collections: [Schema.Types.ObjectId],
-    reviews: [Schema.Types.ObjectId],
+    reviews: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Review'
+    }],
     notes: [Schema.Types.ObjectId]
   },
   {
