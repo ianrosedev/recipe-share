@@ -6,8 +6,10 @@ const schema = new Schema(
   {
     username: {
       type: String,
+      trim: true,
+      minLength: 1,
+      unique: true,
       required: true,
-      unique: true
     },
     email: {
       type: String,
@@ -27,7 +29,10 @@ const schema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'Recipe'
     }],
-    collections: [Schema.Types.ObjectId],
+    collections: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Collection'
+    }],
     reviews: [{
       type: Schema.Types.ObjectId,
       ref: 'Review'

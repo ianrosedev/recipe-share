@@ -3,7 +3,9 @@ const { ObjectId } = mongoose.Types;
 import Recipe from './recipeModel';
 import User from '../user/userModel';
 import Review from '../review/reviewModel';
-import { populateAndSort } from '../../helpers/query';
+import { findAndSort } from '../../helpers/query';
+import merge from 'lodash.merge';
+import pick from 'lodash.pick';
 
 const recipeGet = async (req, res, next) => {
   try {
@@ -16,9 +18,9 @@ const recipeGet = async (req, res, next) => {
   }
 };
 
+// WIP: Query parameters
 const recipeGetAll = async (req, res, next) => {
   try {
-    // WIP: Query parameters
     // Abstract and move when done
     const query = req.query;
     const sorting = {};
@@ -42,10 +44,10 @@ const recipeGetAll = async (req, res, next) => {
 const recipePost = async (req, res, next) => {
   try {
     const userId = req.user._id;
-    const recipeWithAuthor = {
-      ...req.body,
-      author: new ObjectId(userId)
-    };
+    const recipeWithAuthor = merge(
+      req.body,
+      { userId: new ObjectId(userId) }
+    );
     const newRecipe = new Recipe(recipeWithAuthor);
     const createdRecipe = await newRecipe.save();
 
@@ -76,10 +78,14 @@ const recipePut = async (req, res, next) => {
   try {
     const userId = req.user._id;
     const recipeId = req.params.id;
-    const recipeToUpdate = await Recipe.findById(recipeId).select('author');
+    const recipeToUpdate = await Recipe
+      .findById(recipeId)
+      .select('userId');
 
-    if (!userId.equals(recipeToUpdate.author)) {
-      res.status(400).json({ message: 'Not authorized to update this recipe!' });
+    if (!userId.equals(recipeToUpdate.userId)) {
+      res
+        .status(400)
+        .json({ message: 'Not authorized to update this recipe!' });
       return;
     }
 
@@ -96,21 +102,33 @@ const recipePut = async (req, res, next) => {
   }
 };
 
+// TODO: Need to destroy all references to this
+// from the other related documents
 const recipeDelete = async (req, res, next) => {
-  // TODO: Need to destroy all references to this
-  // from the other related documents
   try {
     const userId = req.user._id;
     const recipeId = req.params.id;
-    const recipeToDestroy = await Recipe.findById(recipeId).select('author');
+    const recipeToDestroy = await Recipe
+      .findById(recipeId)
+      .select('userId');
 
     if (!recipeToDestroy) {
       res.status(400).json({ message: 'No recipe with that id' });
       return;
     }
 
-    if (!userId.equals(recipeToDestroy.author)) {
-      res.status(400).json({ message: 'Not authorized to delete this recipe!' });
+    if (!userId.equals(recipeToDestroy.userId)) {
+      res
+        .status(401)
+        .json({ message: 'Not authorized to delete this recipe!' });
+      return;
+    }
+
+    // Can only delete private recipes
+    if (!recipeToDestroy.isPrivate) {
+      res
+        .status(403)
+        .json({ message: 'You can only delete private recipes!' });
       return;
     }
 
@@ -130,12 +148,22 @@ const recipeDelete = async (req, res, next) => {
 
 const recipeReviewsGet = async (req, res, next) => {
   try {
-    const recipeReviews = await populateAndSort(req, res, next, {
-      model: Recipe,
-      path: 'reviews'
-    });
+    // Make sure only permitted operations are sent to query
+    const query = pick(
+      req.query,
+      'createdAt',
+      'rating',
+      'stars',
+      'limit',
+      'offset'
+    );
 
-    res.json(recipeReviews);
+    findAndSort(req, res, next, {
+      model: Recipe,
+      path: 'reviews',
+      id: req.params.id,
+      query
+    });
   }
   catch (err) {
     next(err);

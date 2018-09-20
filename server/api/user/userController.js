@@ -1,7 +1,10 @@
 import User from './userModel';
+import recipeController from '../recipe/recipeController';
+import collectionController from '../collection/collectionController';
 import { signToken } from '../../auth/auth';
+import { findAndSort } from '../../helpers/query';
 import merge from 'lodash.merge';
-import { populateAndSort } from '../../helpers/query';
+import pick from 'lodash.pick';
 
 const userGet = async (req, res, next) => {
   try {
@@ -71,12 +74,39 @@ const userMeGet = async (req, res, next) => {
 
 const userRecipesGet = async (req, res, next) => {
   try {
-    const userRecipes = await populateAndSort(req, res, next, {
-      model: User,
-      path: 'recipes'
-    });
+    // Make sure only permitted operations are sent to query
+    const query = pick(
+      req.query,
+      'createdAt',
+      'rating',
+      'stars',
+      'limit',
+      'offset'
+    );
 
-    res.json(await userRecipes);
+    findAndSort(req, res, next, {
+      model: User,
+      path: 'recipes',
+      id: req.params.id,
+      query
+    });
+  }
+  catch (err) {
+    next(err);
+  }
+};
+
+const userRecipesPost = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const paramId = req.params.id;
+
+    if (!userId.equals(paramId)) {
+      res.status(401).send({ message: 'Unauthorized!' });
+      return;
+    }
+
+    recipeController.recipePost(req, res, next);
   }
   catch (err) {
     next(err);
@@ -85,12 +115,61 @@ const userRecipesGet = async (req, res, next) => {
 
 const userReviewsGet = async (req, res, next) => {
   try {
-    const userReviews = await populateAndSort(req, res, next, {
-      model: User,
-      path: 'reviews'
-    });
+    // Make sure only permitted operations are sent to query
+    const query = pick(
+      req.query,
+      'createdAt',
+      'rating',
+      'stars',
+      'limit',
+      'offset'
+    );
 
-    res.json(await userReviews);
+    findAndSort(req, res, next, {
+      model: User,
+      path: 'reviews',
+      id: req.params.id,
+      query
+    });
+  }
+  catch (err) {
+    next(err);
+  }
+};
+
+const userCollectionsGet = async (req, res, next) => {
+  try {
+    // Make sure only permitted operations are sent to query
+    const query = pick(
+      req.query,
+      'createdAt',
+      'limit',
+      'offset'
+    );
+
+    findAndSort(req, res, next, {
+      model: User,
+      path: 'collections',
+      id: req.params.id,
+      query
+    });
+  }
+  catch (err) {
+    next(err);
+  }
+};
+
+const userCollectionsPost = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const paramId = req.params.id;
+
+    if (!userId.equals(paramId)) {
+      res.status(401).send({ message: 'Unauthorized!' });
+      return;
+    }
+
+    collectionController.collectionPost(req, res, next);
   }
   catch (err) {
     next(err);
@@ -104,5 +183,8 @@ export default {
   userDelete,
   userMeGet,
   userRecipesGet,
-  userReviewsGet
+  userRecipesPost,
+  userReviewsGet,
+  userCollectionsGet,
+  userCollectionsPost
 };

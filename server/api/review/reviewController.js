@@ -2,6 +2,8 @@ import mongoose from 'mongoose';
 const { ObjectId } = mongoose.Types;
 import Review from './reviewModel';
 import User from '../user/userModel';
+import { findAndSort } from '../../helpers/query';
+import pick from 'lodash.pick';
 
 const reviewGet = async (req, res, next) => {
   try {
@@ -22,9 +24,21 @@ const reviewGet = async (req, res, next) => {
 
 const reviewGetAll = async (req, res, next) => {
   try {
-    const reviews = await Review.find({});
+    // Make sure only permitted operations are sent to query
+    const query = pick(
+      req.query,
+      'createdAt',
+      'rating',
+      'stars',
+      'limit',
+      'offset'
+    );
 
-    res.json({ reviews });
+    findAndSort(req, res, next, {
+      model: Review,
+      as: 'reviews',
+      query
+    });
   }
   catch (err) {
     next(err);
@@ -38,7 +52,9 @@ const reviewPut = async (req, res, next) => {
     const reviewToUpdate = await Review.findById(reviewId).select('userId');
 
     if (!userId.equals(reviewToUpdate.userId)) {
-      res.status(400).json({ message: 'Not authorized to update this review!' });
+      res
+        .status(400)
+        .json({ message: 'Not authorized to update this review!' });
       return;
     }
 
@@ -59,7 +75,9 @@ const reviewDelete = async (req, res, next) => {
   try {
     const userId = req.user._id;
     const reviewId = req.params.id;
-    const reviewToDestroy = await Review.findById(reviewId).select('userId');
+    const reviewToDestroy = await Review
+      .findById(reviewId)
+      .select('userId');
 
     if (!reviewToDestroy) {
       res.status(400).json({ message: 'No review with that id' });
@@ -78,7 +96,7 @@ const reviewDelete = async (req, res, next) => {
       { new: true }
     );
 
-    res.json({ user, destroyed: destroyedReview._id });
+    res.json({ user: updatedUser, review: destroyedReview._id });
   }
   catch (err) {
     next(err);

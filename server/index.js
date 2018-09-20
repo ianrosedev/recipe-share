@@ -21,7 +21,7 @@ app.use((err, req, res, next) => {
   // Just for initial testing
   // Check for server/db specific errors
   // and send generic response and log
-  console.log(err.toString());
+  console.log(err);
   res.status(400).json({ error: err.message });
 });
 

@@ -15,13 +15,17 @@ router.route('/:id')
   .get(controller.userGet);
 
 router.route('/:id/recipes')
-  .get(controller.userRecipesGet);
+  // Make sure only public recipes
+  // sent unless user is signed in
+  .get(controller.userRecipesGet)
+  .post(checkToken, verifyUser, controller.userRecipesPost);
 
 router.route('/:id/reviews')
   .get(controller.userReviewsGet);
 
 router.route('/:id/collections')
-  .get(/* TODO */);
+  .get(checkToken, verifyUser, controller.userCollectionsGet)
+  .post(checkToken, verifyUser, controller.userCollectionsPost);
 
 router.route('/:id/images')
   .get( /* TODO */);

@@ -7,7 +7,7 @@ const schema = new Schema(
       type: String,
       required: true
     },
-    author: {
+    userId: {
       type: Schema.Types.ObjectId,
       required: true
     },
