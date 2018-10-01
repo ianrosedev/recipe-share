@@ -5,5 +5,5 @@ export default {
   secrets: {
     jwt: 'chuckaduck2018'
   },
-  expireTime: '3d'
+  expireTime: '10d'
 };

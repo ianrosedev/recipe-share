@@ -1,9 +1,7 @@
-import mongoose from 'mongoose';
-const { ObjectId } = mongoose.Types;
 import Review from './reviewModel';
 import User from '../user/userModel';
-import { findAndSort } from '../../helpers/query';
-import pick from 'lodash.pick';
+import Recipe from '../recipe/recipeModel';
+import { validateQuery, findAndSort } from '../../helpers/query';
 
 const reviewGet = async (req, res, next) => {
   try {
@@ -25,14 +23,18 @@ const reviewGet = async (req, res, next) => {
 const reviewGetAll = async (req, res, next) => {
   try {
     // Make sure only permitted operations are sent to query
-    const query = pick(
-      req.query,
+    const query = validateQuery(req.query, [
       'createdAt',
       'rating',
       'stars',
       'limit',
       'offset'
-    );
+    ]);
+
+    if (!query) {
+      res.status(400).send({ message: 'Bad request!' });
+      return;
+    }
 
     findAndSort(req, res, next, {
       model: Review,
@@ -77,7 +79,7 @@ const reviewDelete = async (req, res, next) => {
     const reviewId = req.params.id;
     const reviewToDestroy = await Review
       .findById(reviewId)
-      .select('userId');
+      .select('userId recipeId');
 
     if (!reviewToDestroy) {
       res.status(400).json({ message: 'No review with that id' });
@@ -90,13 +92,39 @@ const reviewDelete = async (req, res, next) => {
     }
 
     const destroyedReview = await reviewToDestroy.remove();
+
+    if (!destroyedReview) {
+      res.status(400).json({ message: 'Something went wrong' });
+      return;
+    }
+
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { $pull: { reviews: reviewId } },
       { new: true }
     );
 
-    res.json({ user: updatedUser, review: destroyedReview._id });
+    if (!updatedUser) {
+      res.status(400).json({ message: 'Something went wrong' });
+      return;
+    }
+
+    const updatedRecipe = await Recipe.findByIdAndUpdate(
+      recipeId,
+      { $pull: { reviews: reviewId } },
+      { new: true }
+    );
+
+    if (!updatedRecipe) {
+      res.status(400).json({ message: 'Something went wrong' });
+      return;
+    }
+
+    res.json({
+      user: updatedUser,
+      recipe: updatedRecipe,
+      review: destroyedReview._id
+    });
   }
   catch (err) {
     next(err);

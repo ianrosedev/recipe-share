@@ -5,7 +5,8 @@ const schema = new Schema(
   {
     name: {
       type: String,
-      required: true
+      required: true,
+      trim: true
     },
     userId: {
       type: Schema.Types.ObjectId,
@@ -15,19 +16,25 @@ const schema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'Tag'
     }],
-    images: [Schema.Types.ObjectId],
+    images: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Image'
+    }],
     snippet: {
       type: String,
       required: true
     },
     ingredients: [{
       type: String,
+      trim: true,
       required: true
     }],
     directions: [{
       type: String,
       required: true
     }],
+    // !!!
+    // Needs to be average of review ratings
     rating: {
       type: Number,
       min: 1,
@@ -35,6 +42,10 @@ const schema = new Schema(
       default: 5,
       required: true
     },
+    tags: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Tag'
+    }],
     reviews: [{
       type: Schema.Types.ObjectId,
       ref: 'Review'

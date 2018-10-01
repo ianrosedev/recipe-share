@@ -1,4 +1,4 @@
-import merge from 'lodash.merge';
+import { merge } from 'lodash';
 import development from './development';
 import testing from './testing';
 import production from './production';

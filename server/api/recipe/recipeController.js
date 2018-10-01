@@ -3,9 +3,10 @@ const { ObjectId } = mongoose.Types;
 import Recipe from './recipeModel';
 import User from '../user/userModel';
 import Review from '../review/reviewModel';
-import { findAndSort } from '../../helpers/query';
-import merge from 'lodash.merge';
-import pick from 'lodash.pick';
+import Image from '../image/imageModel';
+import { validateQuery, findAndSort } from '../../helpers/query';
+import { cloudinaryPost } from '../../helpers/cloudinary';
+import { merge, uniq } from 'lodash';
 
 const recipeGet = async (req, res, next) => {
   try {
@@ -18,23 +19,30 @@ const recipeGet = async (req, res, next) => {
   }
 };
 
-// WIP: Query parameters
 const recipeGetAll = async (req, res, next) => {
+  // Make sure only permitted operations are sent to query
   try {
-    // Abstract and move when done
-    const query = req.query;
-    const sorting = {};
+    const query = validateQuery(req.query, [
+      'tags',
+      'inc',
+      'notInc',
+      'createdAt',
+      'rating',
+      'stars',
+      'limit',
+      'offset'
+    ]);
 
-    if (query.createdAt) sorting.createdAt = query.createdAt;
-    if (query.rating) sorting.rating = query.rating;
+    if (!query) {
+      res.status(400).send({ message: 'Bad request!' });
+      return;
+    }
 
-    const recipes = await Recipe
-      .find({})
-      .sort(sorting)
-      .skip(Number(query.offset))
-      .limit(Number(query.limit) || 10);
-
-    res.json({ recipes });
+    findAndSort(req, res, next, {
+      model: Recipe,
+      as: 'recipes',
+      query
+    });
   }
   catch (err) {
     next(err);
@@ -44,6 +52,19 @@ const recipeGetAll = async (req, res, next) => {
 const recipePost = async (req, res, next) => {
   try {
     const userId = req.user._id;
+
+    // If there are images
+    // make sure they are in the correct format
+    if (req.body.images) {
+      const images = req.body.images;
+
+      if (typeof images === 'string') {
+        req.body.images = [mongoose.Types.ObjectId(images)];
+      } else {
+        req.body.images = uniq(images).map(img => mongoose.Types.ObjectId(img));
+      }
+    }
+
     const recipeWithAuthor = merge(
       req.body,
       { userId: new ObjectId(userId) }
@@ -58,7 +79,7 @@ const recipePost = async (req, res, next) => {
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { $push: { recipes: new ObjectId(createdRecipe._id) } },
+      { $push: { recipes: createdRecipe._id } },
       { new: true }
     );
 
@@ -82,12 +103,22 @@ const recipePut = async (req, res, next) => {
       .findById(recipeId)
       .select('userId');
 
+    if (!recipeToUpdate) {
+      res.status(400).json({ message: 'No recipe with that id!' });
+      return;
+    }
+
     if (!userId.equals(recipeToUpdate.userId)) {
       res
         .status(400)
         .json({ message: 'Not authorized to update this recipe!' });
       return;
     }
+
+    // Remove unallowed updates
+    delete req.body.images;
+    delete req.body.reviews;
+    delete req.body.rating;
 
     const updatedRecipe = await Recipe.findByIdAndUpdate(
       { _id: recipeId },
@@ -102,61 +133,21 @@ const recipePut = async (req, res, next) => {
   }
 };
 
-// TODO: Need to destroy all references to this
-// from the other related documents
-const recipeDelete = async (req, res, next) => {
-  try {
-    const userId = req.user._id;
-    const recipeId = req.params.id;
-    const recipeToDestroy = await Recipe
-      .findById(recipeId)
-      .select('userId');
-
-    if (!recipeToDestroy) {
-      res.status(400).json({ message: 'No recipe with that id' });
-      return;
-    }
-
-    if (!userId.equals(recipeToDestroy.userId)) {
-      res
-        .status(401)
-        .json({ message: 'Not authorized to delete this recipe!' });
-      return;
-    }
-
-    // Can only delete private recipes
-    if (!recipeToDestroy.isPrivate) {
-      res
-        .status(403)
-        .json({ message: 'You can only delete private recipes!' });
-      return;
-    }
-
-    const destroyedRecipe = await recipeToDestroy.remove();
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { $pull: { recipes: recipeId } },
-      { new: true }
-    );
-
-    res.json({ user: updatedUser, destroyed: destroyedRecipe._id });
-  }
-  catch (err) {
-    next(err);
-  }
-};
-
 const recipeReviewsGet = async (req, res, next) => {
   try {
     // Make sure only permitted operations are sent to query
-    const query = pick(
-      req.query,
+    const query = validateQuery(req.query, [
       'createdAt',
       'rating',
       'stars',
       'limit',
       'offset'
-    );
+    ]);
+
+    if (!query) {
+      res.status(400).send({ message: 'Bad request!' });
+      return;
+    }
 
     findAndSort(req, res, next, {
       model: Recipe,
@@ -222,12 +213,100 @@ const recipeReviewsPost = async (req, res, next) => {
   }
 };
 
+const recipeImagesGet = async (req, res, next) => {
+  try {
+    // Make sure only permitted operations are sent to query
+    const query = validateQuery(req.query, [
+      'createdAt',
+      'limit',
+      'offset'
+    ]);
+
+    if (!query) {
+      res.status(400).send({ message: 'Bad request!' });
+      return;
+    }
+
+    findAndSort(req, res, next, {
+      model: Recipe,
+      path: 'images',
+      id: req.params.id,
+      query
+    });
+  }
+  catch (err) {
+    next(err);
+  }
+};
+
+const recipeImagesPost = async (req, res, next) => {
+  // Request needs to be enctype="multipart/form-data"
+  // Response in JSON
+  try {
+    const userId = req.user._id;
+    const recipeId = req.params.id;
+    const image = req.file.path;
+
+    const createdCloudinary = await cloudinaryPost(image, {
+      width: 600,
+      height: 600,
+      crop: 'limit'
+    });
+
+    if (!createdCloudinary) {
+      res.status(400).json({ message: 'Something went wrong' });
+      return;
+    }
+
+    const newImage = new Image({
+      userId,
+      recipeId,
+      image: createdCloudinary.secure_url,
+      imageId: createdCloudinary.public_id
+    });
+    const createdImage = await newImage.save();
+
+    if (!createdImage) {
+      res.status(400).json({ message: 'Something went wrong' });
+      return;
+    }
+
+    const updatedRecipe = await Recipe.findByIdAndUpdate(
+      recipeId,
+      { $push: { images: createdImage._id } },
+      { new: true }
+    );
+
+    if (!updatedRecipe) {
+      res.status(400).json({ message: 'Something went wrong' });
+      return;
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $push: { images: createdImage._id } },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      res.status(400).json({ message: 'Something went wrong' });
+      return;
+    }
+
+    res.json({ user: updatedUser, recipe: updatedRecipe, image: createdImage });
+  }
+  catch (err) {
+    next(err);
+  }
+};
+
 export default {
   recipeGet,
   recipeGetAll,
   recipePost,
   recipePut,
-  recipeDelete,
   recipeReviewsGet,
-  recipeReviewsPost
+  recipeReviewsPost,
+  recipeImagesGet,
+  recipeImagesPost
 };

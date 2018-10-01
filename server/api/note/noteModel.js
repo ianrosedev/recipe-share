@@ -3,11 +3,15 @@ const Schema = mongoose.Schema;
 
 const schema = new Schema(
   {
+    userId: {
+      type: Schema.Types.ObjectId,
+      required: true
+    },
     recipeId: {
       type: Schema.Types.ObjectId,
       required: true
     },
-    note: {
+    text: {
       type: String,
       required: true
     }

@@ -16,3 +16,6 @@ yarn-error.log*
 # Misc
 .DS_Store
 .vscode/
+
+# Config - Temporarily!
+config/

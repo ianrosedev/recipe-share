@@ -1,10 +1,10 @@
 import User from './userModel';
 import recipeController from '../recipe/recipeController';
 import collectionController from '../collection/collectionController';
+import imageController from '../image/imageController';
 import { signToken } from '../../auth/auth';
-import { findAndSort } from '../../helpers/query';
-import merge from 'lodash.merge';
-import pick from 'lodash.pick';
+import { validateQuery, findAndSort } from '../../helpers/query';
+import { merge } from 'lodash';
 
 const userGet = async (req, res, next) => {
   try {
@@ -75,14 +75,18 @@ const userMeGet = async (req, res, next) => {
 const userRecipesGet = async (req, res, next) => {
   try {
     // Make sure only permitted operations are sent to query
-    const query = pick(
-      req.query,
+    const query = validateQuery(req.query, [
       'createdAt',
       'rating',
       'stars',
       'limit',
       'offset'
-    );
+    ]);
+
+    if (!query) {
+      res.status(400).send({ message: 'Bad request!' });
+      return;
+    }
 
     findAndSort(req, res, next, {
       model: User,
@@ -116,14 +120,18 @@ const userRecipesPost = async (req, res, next) => {
 const userReviewsGet = async (req, res, next) => {
   try {
     // Make sure only permitted operations are sent to query
-    const query = pick(
-      req.query,
+    const query = validateQuery(req.query, [
       'createdAt',
       'rating',
       'stars',
       'limit',
       'offset'
-    );
+    ]);
+
+    if (!query) {
+      res.status(400).send({ message: 'Bad request!' });
+      return;
+    }
 
     findAndSort(req, res, next, {
       model: User,
@@ -140,18 +148,50 @@ const userReviewsGet = async (req, res, next) => {
 const userCollectionsGet = async (req, res, next) => {
   try {
     // Make sure only permitted operations are sent to query
-    const query = pick(
-      req.query,
+    const query = validateQuery(req.query, [
       'createdAt',
       'limit',
       'offset'
-    );
+    ]);
+
+    if (!query) {
+      res.status(400).send({ message: 'Bad request!' });
+      return;
+    }
 
     findAndSort(req, res, next, {
       model: User,
       path: 'collections',
       id: req.params.id,
       query
+    });
+  }
+  catch (err) {
+    next(err);
+  }
+};
+
+const userCollectionsGetAll = async (req, res, next) => {
+  try {
+    // Make sure only permitted operations are sent to query
+    const query = validateQuery(req.query, [
+      'createdAt',
+      'limit',
+      'offset'
+    ]);
+
+    if (!query) {
+      res.status(400).send({ message: 'Bad request!' });
+      return;
+    }
+
+    findAndSort(req, res, next, {
+      model: User,
+      path: 'collections',
+      id: req.params.id,
+      query,
+      // Only allow public collections
+      filter: collection => collection.isPrivate === false
     });
   }
   catch (err) {
@@ -176,6 +216,49 @@ const userCollectionsPost = async (req, res, next) => {
   }
 };
 
+const userImagesGet = async (req, res, next) => {
+  try {
+    // Make sure only permitted operations are sent to query
+    const query = validateQuery(req.query, [
+      'createdAt',
+      'limit',
+      'offset'
+    ]);
+
+    if (!query) {
+      res.status(400).send({ message: 'Bad request!' });
+      return;
+    }
+
+    findAndSort(req, res, next, {
+      model: User,
+      path: 'images',
+      id: req.params.id,
+      query
+    });
+  }
+  catch (err) {
+    next(err);
+  }
+};
+
+const userImagesPost = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const paramId = req.params.id;
+
+    if (!userId.equals(paramId)) {
+      res.status(401).send({ message: 'Unauthorized!' });
+      return;
+    }
+
+    imageController.imagePost(req, res, next);
+  }
+  catch (err) {
+    next(err);
+  }
+};
+
 export default {
   userGet,
   userPost,
@@ -186,5 +269,8 @@ export default {
   userRecipesPost,
   userReviewsGet,
   userCollectionsGet,
-  userCollectionsPost
+  userCollectionsGetAll,
+  userCollectionsPost,
+  userImagesGet,
+  userImagesPost
 };

@@ -1,12 +1,14 @@
 import { Router } from 'express';
 const router = Router();
+import controller from './imageController';
+import { checkToken, verifyUser } from '../../auth/auth';
+import uploadImage from '../../middleware/multipartMiddleware';
 
 router.route('/')
-  .get(/* TODO */)
-  .post(/* TODO */);
+  .post(checkToken, verifyUser, uploadImage, controller.imagePost);
 
 router.route('/:id')
-  .get(/* TODO */)
-  .delete(/* TODO */);
+  .get(controller.imageGet)
+  .delete(checkToken, verifyUser, controller.imageDelete);
 
 export default router;

@@ -2,9 +2,8 @@ import mongoose from 'mongoose';
 const { ObjectId } = mongoose.Types;
 import Collection from './collectionModel';
 import User from '../user/userModel';
-import { findAndSort } from '../../helpers/query';
-import merge from 'lodash.merge';
-import pick from 'lodash.pick';
+import { validateQuery, findAndSort } from '../../helpers/query';
+import { merge } from 'lodash';
 
 const collectionGet = async (req, res, next) => {
   try {
@@ -28,19 +27,23 @@ const collectionGet = async (req, res, next) => {
 const collectionGetAll = async (req, res, next) => {
   try {
     // Make sure only permitted operations are sent to query
-    const query = pick(
-      req.query,
+    const query = validateQuery(req.query, [
       'createdAt',
       'limit',
       'offset'
-    );
+    ]);
+
+    if (!query) {
+      res.status(400).send({ message: 'Bad request!' });
+      return;
+    }
 
     findAndSort(req, res, next, {
       model: Collection,
       as: 'collections',
       query,
       // Only allow public collections
-      filter: (collection) => collection.isPrivate === false
+      filter: collection => collection.isPrivate === false
     });
   }
   catch (err) {
@@ -65,7 +68,7 @@ const collectionPost = async (req, res, next) => {
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { $push: { collections: new ObjectId(createdCollection._id) } },
+      { $push: { collections: createdCollection._id } },
       { new: true }
     );
 

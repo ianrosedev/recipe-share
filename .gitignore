@@ -20,6 +20,9 @@ yarn-error.log*
 # Enviorment
 *.env
 
+# Temporary
+/tmp
+
 # Misc
 .DS_Store
 .vscode/

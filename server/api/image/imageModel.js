@@ -7,28 +7,21 @@ const schema = new Schema(
       type: Schema.Types.ObjectId,
       required: true
     },
-    recipeId: {
-      type: Schema.Types.ObjectId,
-      required: true
-    },
-    text: {
+    recipeId: Schema.Types.ObjectId,
+    reviewId: Schema.Types.ObjectId,
+    image: {
       type: String,
       required: true
     },
-    rating: {
-      type: Number,
-      min: 1,
-      max: 5,
+    imageId: {
+      type: String,
       required: true
     },
-    images: [{
-      type: Schema.Types.ObjectId,
-      ref: 'Image'
-    }]
+    text: String
   },
   {
     timestamps: true
   }
 );
 
-export default mongoose.model('Review', schema);
+export default mongoose.model('Image', schema);

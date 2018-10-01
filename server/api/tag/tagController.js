@@ -1,6 +1,5 @@
 import Tag from './tagModel';
-import { findAndSort } from '../../helpers/query';
-import pick from 'lodash.pick';
+import { validateQuery, findAndSort } from '../../helpers/query';
 
 const tagGet = async (req, res, next) => {
   try {
@@ -24,12 +23,16 @@ const tagGet = async (req, res, next) => {
 const tagGetAll = async (req, res, next) => {
   try {
     // Make sure only permitted operations are sent to query
-    const query = pick(
-      req.query,
+    const query = validateQuery(req.query, [
       'createdAt',
       'limit',
       'offset'
-    );
+    ]);
+
+    if (!query) {
+      res.status(400).send({ message: 'Bad request!' });
+      return;
+    }
 
     findAndSort(req, res, next, {
       model: Tag,

@@ -1,3 +1,56 @@
+import Tag from '../api/tag/tagModel';
+import { pick, startCase } from 'lodash';
+
+//!!!
+// inc, notInc
+export const validateQuery = (query, allowedParams) => {
+  const allowedQueries = pick(query, ...allowedParams);
+  const {
+    tags,
+    inc,
+    notInc,
+    createdAt,
+    rating,
+    stars,
+    limit,
+    offset
+  } = allowedQueries;
+
+  if (tags && !tags.split(',').every(value => (/^[\w\s]+$/).test(value))) {
+    return false;
+  }
+
+  if (inc && !inc.split(',').every(value => (/^[\w\s]+$/).test(value))) {
+    return false;
+  }
+
+  if (notInc && !notInc.split(',').every(value => (/^[\w\s]+$/).test(value))) {
+    return false;
+  }
+
+  if (createdAt && !(/asc|desc/).test(createdAt)) {
+    return false;
+  }
+
+  if (rating && !(/asc|desc/).test(rating)) {
+    return false;
+  }
+
+  if (stars && !(/^[1-5]$/).test(stars)) {
+    return false;
+  }
+
+  if (limit && !(/^\d+$/).test(limit)) {
+    return false;
+  }
+
+  if (offset && !(/^\d+$/).test(offset)) {
+    return false;
+  }
+
+  return allowedQueries;
+};
+
 const queryFind = async (model, options) => {
   /**
     * Params: model, options
@@ -33,7 +86,7 @@ const queryFind = async (model, options) => {
   }
 };
 
-const queryFindAndPopulate = async (model, id, options) => {
+const queryFindAndPopulate = async (model, id, options = {}) => {
   /**
     * Params: model, id, options
     *
@@ -99,7 +152,14 @@ const queryPaginate = (res, data, offset = 0, limit = 20) => {
   }
 };
 
-export const findAndSort = async (req, res, next, options = {}) => {
+export const findAndSort = async (req, res, next, {
+  model,
+  id,
+  path,
+  as,
+  query,
+  filter
+}) => {
   /**
     * Params: req, res, next, options
     *
@@ -118,12 +178,6 @@ export const findAndSort = async (req, res, next, options = {}) => {
     * Required: req, res, next, options.model
   **/
   try {
-    const model = options.model;
-    const path = options.path;
-    const id = options.id;
-    const as = options.as;
-    const query = options.query;
-    const filter = options.filter;
     const queryOptions = path ? { path } : {};
 
     // Check for required options
@@ -144,10 +198,37 @@ export const findAndSort = async (req, res, next, options = {}) => {
       }
     }
 
-    if (query.stars) {
-      queryOptions.match = {
-        rating: query.stars
-      };
+    if (query.stars || query.tags || query.inc || query.notInc) {
+      queryOptions.match = {};
+
+      if (query.stars) {
+        queryOptions.match.rating = query.stars;
+      }
+
+      if (query.tags) {
+        const tags = query.tags.split(',').map(tag => startCase(tag.trim()));
+        const foundTags = await Tag.find({ name: tags });
+        const tagIds = await foundTags.map(tag => tag._id)
+        queryOptions.match.tags = { $all: tagIds };
+      }
+
+      if (query.inc || query.notInc) {
+        queryOptions.match.ingredients = {};
+
+        if (query.inc) {
+          const inc = query.inc.split(',').map(
+            ingredient => startCase(ingredient.trim())
+          );
+          queryOptions.match.ingredients.$all = inc;
+        }
+
+        if (query.notInc) {
+          const notInc = query.notInc.split(',').map(
+            ingredient => startCase(ingredient.trim())
+          );
+          queryOptions.match.ingredients.$nin = notInc;
+        }
+      }
     }
 
     // Get reults from database
@@ -181,7 +262,7 @@ export const findAndSort = async (req, res, next, options = {}) => {
       res.json({
         length: await results.length,
         groupLength: await results.length,
-        [path || as]: await results
+        [as || path]: await results
       });
       return;
     }
@@ -202,7 +283,7 @@ export const findAndSort = async (req, res, next, options = {}) => {
     res.json({
       length: await results.length,
       groupLength: await paginatedResults.length,
-      [path || as]: await paginatedResults
+      [as || path]: await paginatedResults
     });
   }
   catch (err) {

@@ -2,6 +2,7 @@ import { Router } from 'express';
 const router = Router();
 import controller from './userController';
 import { checkToken, verifyUser } from '../../auth/auth';
+import uploadImage from '../../middleware/multipartMiddleware';
 
 router.route('/')
   .post(controller.userPost)
@@ -15,8 +16,6 @@ router.route('/:id')
   .get(controller.userGet);
 
 router.route('/:id/recipes')
-  // Make sure only public recipes
-  // sent unless user is signed in
   .get(controller.userRecipesGet)
   .post(checkToken, verifyUser, controller.userRecipesPost);
 
@@ -27,7 +26,12 @@ router.route('/:id/collections')
   .get(checkToken, verifyUser, controller.userCollectionsGet)
   .post(checkToken, verifyUser, controller.userCollectionsPost);
 
+router.route('/:id/collections/public')
+  .get(controller.userCollectionsGetAll);
+
+
 router.route('/:id/images')
-  .get( /* TODO */);
+  .get(checkToken, verifyUser, controller.userImagesGet)
+  .post(checkToken, verifyUser, uploadImage, controller.userImagesPost);
 
 export default router;

@@ -21,10 +21,16 @@ const schema = new Schema(
       required: true,
       select: false
     },
-    location: String,
+    location: {
+      type: String,
+      trim: true
+    },
     snippet: String,
     profileImage: String,
-    images: [Schema.Types.ObjectId],
+    images: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Image'
+    }],
     recipes: [{
       type: Schema.Types.ObjectId,
       ref: 'Recipe'
@@ -37,7 +43,10 @@ const schema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'Review'
     }],
-    notes: [Schema.Types.ObjectId]
+    notes: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Note'
+    }]
   },
   {
     timestamps: true
