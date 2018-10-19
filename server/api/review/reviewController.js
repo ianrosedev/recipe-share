@@ -61,7 +61,7 @@ const reviewPut = async (req, res, next) => {
     }
 
     const updatedReview = await Review.findByIdAndUpdate(
-      { _id: reviewId },
+      reviewId,
       { $set: req.body },
       { new: true }
     );
@@ -110,7 +110,7 @@ const reviewDelete = async (req, res, next) => {
     }
 
     const updatedRecipe = await Recipe.findByIdAndUpdate(
-      recipeId,
+      reviewToDestroy.recipeId,
       { $pull: { reviews: reviewId } },
       { new: true }
     );

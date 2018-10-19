@@ -141,7 +141,7 @@ const collectionPut = async (req, res, next) => {
     }
 
     const updatedCollection = await Collection.findByIdAndUpdate(
-      { _id: collectionId },
+      collectionId,
       { ...options },
       { new: true }
     );

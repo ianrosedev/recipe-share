@@ -4,6 +4,7 @@ import collectionController from '../collection/collectionController';
 import imageController from '../image/imageController';
 import { signToken } from '../../auth/auth';
 import { validateQuery, findAndSort } from '../../helpers/query';
+import { formatImages } from '../../helpers/images';
 import { merge } from 'lodash';
 
 const userGet = async (req, res, next) => {
@@ -23,6 +24,12 @@ const userGet = async (req, res, next) => {
 
 const userPost = async (req, res, next) => {
   try {
+    // If there are images
+    // make sure they are in the correct format
+    if (req.body.images) {
+      req.body.images = await formatImages(req.body.images);
+    }
+
     const newUser = new User(req.body);
     newUser.password = await newUser.hashPassword(newUser.password);
     const createdUser = await newUser.save();
@@ -38,6 +45,13 @@ const userPost = async (req, res, next) => {
 const userPut = async (req, res, next) => {
   try {
     const user = req.user;
+
+    // If there are images
+    // make sure they are in the correct format
+    if (req.body.images) {
+      req.body.images = await formatImages(req.body.images);
+    }
+
     const userUpdate = req.body;
     const update = merge(user, userUpdate);
     const updatedUser = await user.save(update);

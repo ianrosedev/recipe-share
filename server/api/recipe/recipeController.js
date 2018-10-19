@@ -4,9 +4,10 @@ import Recipe from './recipeModel';
 import User from '../user/userModel';
 import Review from '../review/reviewModel';
 import Image from '../image/imageModel';
+import noteController from '../note/noteController';
 import { validateQuery, findAndSort } from '../../helpers/query';
-import { cloudinaryPost } from '../../helpers/cloudinary';
-import { merge, uniq } from 'lodash';
+import { cloudinaryPost, formatImages } from '../../helpers/images';
+import { merge } from 'lodash';
 
 const recipeGet = async (req, res, next) => {
   try {
@@ -56,13 +57,7 @@ const recipePost = async (req, res, next) => {
     // If there are images
     // make sure they are in the correct format
     if (req.body.images) {
-      const images = req.body.images;
-
-      if (typeof images === 'string') {
-        req.body.images = [mongoose.Types.ObjectId(images)];
-      } else {
-        req.body.images = uniq(images).map(img => mongoose.Types.ObjectId(img));
-      }
+      req.body.images = await formatImages(req.body.images);
     }
 
     const recipeWithAuthor = merge(
@@ -121,8 +116,8 @@ const recipePut = async (req, res, next) => {
     delete req.body.rating;
 
     const updatedRecipe = await Recipe.findByIdAndUpdate(
-      { _id: recipeId },
-      req.body,
+      recipeId,
+      { $set: req.body },
       { new: true }
     );
 
@@ -181,7 +176,7 @@ const recipeReviewsPost = async (req, res, next) => {
     const newReview = await new Review(userReview);
     const createdReview = await newReview.save();
     const updatedRecipe = await Recipe.findByIdAndUpdate(
-      { _id: recipeId },
+      recipeId,
       { $push: { reviews: createdReview._id } },
       { new: true }
     );
@@ -300,6 +295,42 @@ const recipeImagesPost = async (req, res, next) => {
   }
 };
 
+const recipeNotesGet = async (req, res, next) => {
+  try {
+    noteController.noteGet(req, res, next);
+  }
+  catch (err) {
+    next(err);
+  }
+};
+
+const recipeNotesPost = async (req, res, next) => {
+  try {
+    noteController.notePost(req, res, next);
+  }
+  catch (err) {
+    next(err);
+  }
+};
+
+const recipeNotesPut = async (req, res, next) => {
+  try {
+    noteController.notePut(req, res, next);
+  }
+  catch (err) {
+    next(err);
+  }
+};
+
+const recipeNotesDelete = async (req, res, next) => {
+  try {
+    noteController.noteDelete(req, res, next);
+  }
+  catch (err) {
+    next(err);
+  }
+};
+
 export default {
   recipeGet,
   recipeGetAll,
@@ -308,5 +339,9 @@ export default {
   recipeReviewsGet,
   recipeReviewsPost,
   recipeImagesGet,
-  recipeImagesPost
+  recipeImagesPost,
+  recipeNotesGet,
+  recipeNotesPost,
+  recipeNotesPut,
+  recipeNotesDelete
 };

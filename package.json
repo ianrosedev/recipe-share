@@ -21,6 +21,6 @@
     "esm": "^3.0.84"
   },
   "devDependencies": {
-    "nodemon": "^1.18.4"
+    "nodemon": "^1.18.5"
   }
 }

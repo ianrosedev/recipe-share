@@ -20,4 +20,10 @@ router.route('/:id/images')
   .get(controller.recipeImagesGet)
   .post(checkToken, verifyUser, uploadImage, controller.recipeImagesPost);
 
+router.route('/:id/notes')
+  .get(checkToken, verifyUser, controller.recipeNotesGet)
+  .post(checkToken, verifyUser, controller.recipeNotesPost)
+  .put(checkToken, verifyUser, controller.recipeNotesPut)
+  .delete(checkToken, verifyUser, controller.recipeNotesDelete);
+
 export default router;

@@ -2,7 +2,7 @@ import Image from './imageModel';
 import User from '../user/userModel';
 import Recipe from '../recipe/recipeModel';
 import Review from '../review/reviewModel';
-import { cloudinaryPost, cloudinaryDelete } from '../../helpers/cloudinary';
+import { cloudinaryPost, cloudinaryDelete } from '../../helpers/images';
 
 const imageGet = async (req, res, next) => {
   try {
