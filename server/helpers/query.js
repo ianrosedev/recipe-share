@@ -1,8 +1,8 @@
 import Tag from '../api/tag/tagModel';
+import { errorResponse } from '../helpers/error';
+import { dataResponse } from '../helpers/response';
 import { pick, startCase } from 'lodash';
 
-//!!!
-// inc, notInc
 export const validateQuery = (query, allowedParams) => {
   const allowedQueries = pick(query, ...allowedParams);
   const {
@@ -69,7 +69,7 @@ const queryFind = async (model, options) => {
 
     // Check for required options
     if (!model) {
-      throw new Error('Server Error: `option: model` is required!');
+      throw new TypeError('`option: model` is required');
     }
 
     // Get data from database
@@ -79,7 +79,7 @@ const queryFind = async (model, options) => {
       .sort(sort)
       .lean();
 
-    return await results;
+    return results;
   }
   catch (err) {
     throw new Error(err);
@@ -104,26 +104,29 @@ const queryFindAndPopulate = async (model, id, options = {}) => {
 
     // Check for required options
     if (!model) {
-      throw new Error('Server Error: `option: model` is required!');
+      throw new TypeError('`option: model` is required');
     }
 
     if (!id) {
-      throw new Error('Server Error: `option: id` is required');
+      throw new TypeError('`option: id` is required');
     }
 
     if (!path) {
-      throw new Error('Server Error: `option: path` is required!');
+      throw new TypeError('`option: path` is required');
     }
 
     // Get data from database
-    // Handle error from database?
     const results = await model
       .findById(id)
       .select(`-_id ${path}`)
       .populate(options)
       .lean();
 
-    return await results;
+    if (!results) {
+      throw new Error('Internal Server Error');
+    }
+
+    return results;
   }
   catch (err) {
     throw new Error(err);
@@ -140,8 +143,12 @@ const queryPaginate = (res, data, offset = 0, limit = 20) => {
     offset = Number(offset);
     limit = Number(limit) + offset;
 
-    if (offset >= data.length) {
-      res.status(400).json({ message: 'Limit is out of bounds!' });
+    if (data.length > 0 && data.length <= offset) {
+      res.status(400).json({
+        statusCode: 400,
+        error: 'Bad Request',
+        message: 'Offset out of bounds'
+      });
       return;
     }
 
@@ -182,7 +189,7 @@ export const findAndSort = async (req, res, next, {
 
     // Check for required options
     if (!model) {
-      throw new Error('Server Error: `option: model` is required!');
+      throw new Error('`option: model` is required');
     }
 
     // Build query options
@@ -244,8 +251,7 @@ export const findAndSort = async (req, res, next, {
 
     // Check that result was found
     if (!results) {
-      res.status(400).json({ message: 'Bad request!' });
-      return;
+      errorResponse.customBadRequest();
     }
 
     // Set results to correct path
@@ -259,11 +265,11 @@ export const findAndSort = async (req, res, next, {
     // Check for pagination params
     // If none send response
     if (!query.offset && !query.limit) {
-      res.json({
-        length: await results.length,
-        groupLength: await results.length,
-        [as || path]: await results
-      });
+      res.json(dataResponse({
+        length: results.length,
+        groupLength: results.length,
+        [as || path]: results
+      }));
       return;
     }
 
@@ -280,11 +286,11 @@ export const findAndSort = async (req, res, next, {
       return;
     }
 
-    res.json({
-      length: await results.length,
-      groupLength: await paginatedResults.length,
-      [as || path]: await paginatedResults
-    });
+    res.json(dataResponse({
+      length: results.length,
+      groupLength: paginatedResults.length,
+      [as || path]: paginatedResults
+    }));
   }
   catch (err) {
     next(err);

@@ -2,142 +2,124 @@ import Image from './imageModel';
 import User from '../user/userModel';
 import Recipe from '../recipe/recipeModel';
 import Review from '../review/reviewModel';
-import { cloudinaryPost, cloudinaryDelete } from '../../helpers/images';
+import { asyncMiddleware } from '../../helpers/async';
+import { errorResponse } from '../../helpers/error';
+import { dataResponse } from '../../helpers/response';
+import { cloudinaryPost, cloudinaryDelete } from '../../helpers/image';
 
-const imageGet = async (req, res, next) => {
-  try {
-    const id = req.params.id;
-    const image = await Image.findById(id);
+const imageGet = asyncMiddleware(async (req, res, next) => {
+  const id = req.params.id;
+  const image = await Image.findById(id);
 
-    res.json({ image });
+  if (!image) {
+    errorResponse.searchNotFound('image');
   }
-  catch (err) {
-    next(err);
-  }
-};
 
-const imagePost = async (req, res, next) => {
+  res.json(dataResponse({ image }));
+});
+
+const imagePost = asyncMiddleware(async (req, res, next) => {
   // Request needs to be enctype="multipart/form-data"
   // Response in JSON
-  try {
-    const userId = req.user._id;
-    const image = req.file.path;
+  const userId = req.user._id;
+  const image = req.file.path;
 
-    const createdCloudinary = await cloudinaryPost(image, {
-      width: 300,
-      height: 500,
-      crop: 'limit'
-    });
+  const createdCloudinary = await cloudinaryPost(image, {
+    width: 300,
+    height: 500,
+    crop: 'limit'
+  });
 
-    if (!createdCloudinary) {
-      res.status(400).json({ message: 'Something went wrong' });
-      return;
-    }
+  if (!createdCloudinary) {
+    errorResponse.serverError();
+  }
 
-    const newImage = new Image({
-      userId,
-      image: createdCloudinary.secure_url,
-      imageId: createdCloudinary.public_id
-    });
-    const createdImage = await newImage.save();
+  const newImage = new Image({
+    userId,
+    image: createdCloudinary.secure_url,
+    imageId: createdCloudinary.public_id
+  });
+  const createdImage = await newImage.save();
 
-    if (!createdImage) {
-      res.status(400).json({ message: 'Something went wrong' });
-      return;
-    }
+  if (!createdImage) {
+    errorResponse.serverError();
+  }
 
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { $push: { images: createdImage._id } },
-      { new: true }
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    { $push: { images: createdImage._id } },
+    { new: true }
+  );
+
+  if (!updatedUser) {
+    errorResponse.serverError();
+  }
+
+  res.json(dataResponse({ user: updatedUser, image: createdImage }));
+});
+
+const imageDelete = asyncMiddleware(async (req, res, next) => {
+  const userId = req.user._id;
+  const imageId = req.params.id;
+  const imageToDestroy = await Image.findById(imageId);
+
+  if (!imageToDestroy) {
+    errorResponse.searchNotFound('image');
+  }
+
+  if (!userId.equals(imageToDestroy.userId)) {
+    errorResponse.unauthorized();
+  }
+
+  const destroyedCloudinary = await cloudinaryDelete(imageToDestroy.imageId);
+
+  if (!destroyedCloudinary) {
+    errorResponse.serverError();
+  }
+
+  const destroyedImage = await imageToDestroy.remove();
+
+  if (!destroyedImage) {
+    errorResponse.serverError();
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    { $pull: { images: imageId } },
+    { new: true }
+  );
+
+  if (!updatedUser) {
+    errorResponse.serverError();
+  }
+
+  if (imageToDestroy.recipeId) {
+    const updatedRecipe = await Recipe.findByIdAndUpdate(
+      imageToDestroy.recipeId,
+      { $pull: { images: imageId } }
     );
 
-    if (!updatedUser) {
-      res.status(400).json({ message: 'Something went wrong' });
-      return;
+    if (!updatedRecipe) {
+      errorResponse.serverError();
     }
-
-    res.json({ user: updatedUser, image: createdImage });
   }
-  catch (err) {
-    next(err);
-  }
-};
 
-const imageDelete = async (req, res, next) => {
-  try {
-    const userId = req.user._id;
-    const imageId = req.params.id;
-    const imageToDestroy = await Image.findById(imageId);
-
-    if (!imageToDestroy) {
-      res.status(400).json({ message: 'No image with that id' });
-      return;
-    }
-
-    if (!userId.equals(imageToDestroy.userId)) {
-      res
-        .status(401)
-        .json({ message: 'Not authorized to delete this image!' });
-      return;
-    }
-
-    const destroyedCloudinary = await cloudinaryDelete(imageToDestroy.imageId);
-
-    if (!destroyedCloudinary) {
-      res.status(400).json({ message: 'Something went wrong' });
-      return;
-    }
-
-    const destroyedImage = await imageToDestroy.remove();
-
-    if (!destroyedImage) {
-      res.status(400).json({ message: 'Something went wrong' });
-      return;
-    }
-
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { $pull: { images: imageId } },
-      { new: true }
+  if (imageToDestroy.reviewId) {
+    const updatedReview = await Review.findByIdAndUpdate(
+      imageToDestroy.reviewId,
+      { $pull: { images: imageId } }
     );
 
-    if (!updatedUser) {
-      res.status(400).json({ message: 'Something went wrong' });
-      return;
+    if (!updatedReview) {
+      errorResponse.serverError();
     }
-
-    if (imageToDestroy.recipeId) {
-      const updatedRecipe = await Recipe.findByIdAndUpdate(
-        imageToDestroy.recipeId,
-        { $pull: { images: imageId } }
-      );
-
-      if (!updatedRecipe) {
-        res.status(400).json({ message: 'Something went wrong' });
-        return;
-      }
-    }
-
-    if (imageToDestroy.reviewId) {
-      const updatedReview = await Review.findByIdAndUpdate(
-        imageToDestroy.reviewId,
-        { $pull: { images: imageId } }
-      );
-
-      if (!updatedReview) {
-        res.status(400).json({ message: 'Something went wrong' });
-        return;
-      }
-    }
-
-    res.json({ user: updatedUser, destroyed: destroyedImage._id })
-
   }
-  catch (err) {
-    next(err);
-  }
-};
+
+  res.json(dataResponse({
+    user: updatedUser,
+    destroyed: destroyedImage._id
+  }));
+});
 
 export default {
   imageGet,

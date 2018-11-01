@@ -2,17 +2,20 @@ import { merge } from 'lodash';
 import development from './development';
 import testing from './testing';
 import production from './production';
+import dotenv from 'dotenv';
 
+// NODE_ENV setup
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
-const env = process.env.NODE_ENV;
 
-const baseConfig = {
-  port: 3001
-};
+// Don't use `dotenv` in production
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config();
+}
 
+const baseConfig = { port: 3001 };
 let envConfig;
 
-switch (env) {
+switch (process.env.NODE_ENV) {
   case 'development':
     envConfig = development;
     break;

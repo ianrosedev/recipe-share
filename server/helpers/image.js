@@ -3,8 +3,8 @@ const { ObjectId } = mongoose.Types;
 import cloudinary from '../config/cloudinary';
 import fs from 'fs';
 import { promisify } from 'util';
+const asyncUnlink = promisify(fs.unlink);
 import { uniq } from 'lodash';
-const unlinkAsync = promisify(fs.unlink);
 
 export const cloudinaryPost = async (imagePath, options) => {
   const createdImage = await cloudinary.v2.uploader.upload(
@@ -13,7 +13,7 @@ export const cloudinaryPost = async (imagePath, options) => {
   );
 
   //  Delete file after upload
-  await unlinkAsync(imagePath);
+  await asyncUnlink(imagePath);
 
   return createdImage;
 };

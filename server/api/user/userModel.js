@@ -8,6 +8,7 @@ const schema = new Schema(
       type: String,
       trim: true,
       minLength: 1,
+      maxLength: 72,
       unique: true,
       required: true,
     },
@@ -18,6 +19,9 @@ const schema = new Schema(
     },
     password: {
       type: String,
+      trim: true,
+      minLength: 8,
+      maxLength: 72,
       required: true,
       select: false
     },

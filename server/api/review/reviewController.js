@@ -1,135 +1,110 @@
 import Review from './reviewModel';
 import User from '../user/userModel';
 import Recipe from '../recipe/recipeModel';
+import { asyncMiddleware } from '../../helpers/async';
+import { errorResponse } from '../../helpers/error';
+import { dataResponse } from '../../helpers/response';
 import { validateQuery, findAndSort } from '../../helpers/query';
 
-const reviewGet = async (req, res, next) => {
-  try {
-    const reviewId = req.params.id;
-    const review = await Review.findById(reviewId);
+const reviewGet = asyncMiddleware(async (req, res, next) => {
+  const reviewId = req.params.id;
+  const review = await Review.findById(reviewId);
 
-    if (!review) {
-      res.status(400).json({ message: 'No review with that id!' });
-      return;
-    }
-
-    res.json({ review });
+  if (!review) {
+    errorResponse.searchNotFound('review')
   }
-  catch (err) {
-    next(err);
+
+  res.json(dataResponse({ review }));
+});
+
+const reviewGetAll = asyncMiddleware(async (req, res, next) => {
+  // Make sure only permitted operations are sent to query
+  const query = validateQuery(req.query, [
+    'createdAt',
+    'rating',
+    'stars',
+    'limit',
+    'offset'
+  ]);
+
+  if (!query) {
+    errorResponse.invalidQuery();
   }
-};
 
-const reviewGetAll = async (req, res, next) => {
-  try {
-    // Make sure only permitted operations are sent to query
-    const query = validateQuery(req.query, [
-      'createdAt',
-      'rating',
-      'stars',
-      'limit',
-      'offset'
-    ]);
+  findAndSort(req, res, next, {
+    model: Review,
+    as: 'reviews',
+    query
+  });
+});
 
-    if (!query) {
-      res.status(400).send({ message: 'Bad request!' });
-      return;
-    }
+const reviewPut = asyncMiddleware(async (req, res, next) => {
+  const userId = req.user._id;
+  const reviewId = req.params.id;
+  const reviewToUpdate = await Review.findById(reviewId).select('userId');
 
-    findAndSort(req, res, next, {
-      model: Review,
-      as: 'reviews',
-      query
-    });
+  if (!userId.equals(reviewToUpdate.userId)) {
+    errorResponse.unauthorized();
   }
-  catch (err) {
-    next(err);
+
+  const updatedReview = await Review.findByIdAndUpdate(
+    reviewId,
+    { $set: req.body },
+    { new: true }
+  );
+
+  res.json(dataResponse(updatedReview));
+});
+
+const reviewDelete = asyncMiddleware(async (req, res, next) => {
+  const userId = req.user._id;
+  const reviewId = req.params.id;
+  const reviewToDestroy = await Review
+    .findById(reviewId)
+    .select('userId recipeId');
+
+  if (!reviewToDestroy) {
+    errorResponse.searchNotFound('review');
   }
-};
 
-const reviewPut = async (req, res, next) => {
-  try {
-    const userId = req.user._id;
-    const reviewId = req.params.id;
-    const reviewToUpdate = await Review.findById(reviewId).select('userId');
-
-    if (!userId.equals(reviewToUpdate.userId)) {
-      res
-        .status(400)
-        .json({ message: 'Not authorized to update this review!' });
-      return;
-    }
-
-    const updatedReview = await Review.findByIdAndUpdate(
-      reviewId,
-      { $set: req.body },
-      { new: true }
-    );
-
-    res.json(updatedReview);
+  if (!userId.equals(reviewToDestroy.userId)) {
+    errorResponse.unauthorized();
   }
-  catch (err) {
-    next(err);
+
+  const destroyedReview = await reviewToDestroy.remove();
+
+  if (!destroyedReview) {
+    errorResponse.serverError();
   }
-};
 
-const reviewDelete = async (req, res, next) => {
-  try {
-    const userId = req.user._id;
-    const reviewId = req.params.id;
-    const reviewToDestroy = await Review
-      .findById(reviewId)
-      .select('userId recipeId');
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    { $pull: { reviews: reviewId } },
+    { new: true }
+  );
 
-    if (!reviewToDestroy) {
-      res.status(400).json({ message: 'No review with that id' });
-      return;
-    }
-
-    if (!userId.equals(reviewToDestroy.userId)) {
-      res.status(400).json({ message: 'Not authorized to delete this review!' });
-      return;
-    }
-
-    const destroyedReview = await reviewToDestroy.remove();
-
-    if (!destroyedReview) {
-      res.status(400).json({ message: 'Something went wrong' });
-      return;
-    }
-
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { $pull: { reviews: reviewId } },
-      { new: true }
-    );
-
-    if (!updatedUser) {
-      res.status(400).json({ message: 'Something went wrong' });
-      return;
-    }
-
-    const updatedRecipe = await Recipe.findByIdAndUpdate(
-      reviewToDestroy.recipeId,
-      { $pull: { reviews: reviewId } },
-      { new: true }
-    );
-
-    if (!updatedRecipe) {
-      res.status(400).json({ message: 'Something went wrong' });
-      return;
-    }
-
-    res.json({
-      user: updatedUser,
-      recipe: updatedRecipe,
-      review: destroyedReview._id
-    });
+  if (!updatedUser) {
+    errorResponse.serverError();
+    return;
   }
-  catch (err) {
-    next(err);
+
+  const updatedRecipe = await Recipe.findByIdAndUpdate(
+    reviewToDestroy.recipeId,
+    { $pull: { reviews: reviewId } },
+    { new: true }
+  );
+
+  if (!updatedRecipe) {
+    errorResponse.serverError();
+    return;
   }
-};
+
+  res.json(dataResponse({
+    user: updatedUser,
+    recipe: updatedRecipe,
+    review: destroyedReview._id
+  }));
+});
 
 export default {
   reviewGet,

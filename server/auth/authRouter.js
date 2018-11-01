@@ -6,10 +6,7 @@ import { verifyLoginEmail } from './auth';
 router.route('/login')
   .post(verifyLoginEmail, controller.loginPost);
 
-router.route('/logout')
-  .post(/* TODO */);
-
 router.route('/requestPasswordReset')
-  .post(/* TODO */);
+  .post(controller.requestPasswordReset);
 
 export default router;

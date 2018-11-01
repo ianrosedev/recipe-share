@@ -1,66 +1,51 @@
 import Tag from './tagModel';
+import { asyncMiddleware } from '../../helpers/async';
+import { errorResponse } from '../../helpers/error';
+import { dataResponse } from '../../helpers/response';
 import { validateQuery, findAndSort } from '../../helpers/query';
 
-const tagGet = async (req, res, next) => {
-  try {
-    const tagId = req.params.id;
-    const tag = await Tag
-      .findById(tagId)
-      .lean();
+const tagGet = asyncMiddleware(async (req, res, next) => {
+  const tagId = req.params.id;
+  const tag = await Tag
+    .findById(tagId)
+    .lean();
 
-    if (!tag) {
-      res.status(400).json({ message: 'Tag not found!' });
-      return;
-    }
-
-    res.json({ tag });
+  if (!tag) {
+    errorResponse.searchNotFound('tag');
   }
-  catch (err) {
-    next(err);
+
+  res.json(dataResponse({ tag }));
+});
+
+const tagGetAll = asyncMiddleware(async (req, res, next) => {
+  // Make sure only permitted operations are sent to query
+  const query = validateQuery(req.query, [
+    'createdAt',
+    'limit',
+    'offset'
+  ]);
+
+  if (!query) {
+    errorResponse.invalidQuery();
   }
-};
 
-const tagGetAll = async (req, res, next) => {
-  try {
-    // Make sure only permitted operations are sent to query
-    const query = validateQuery(req.query, [
-      'createdAt',
-      'limit',
-      'offset'
-    ]);
+  findAndSort(req, res, next, {
+    model: Tag,
+    as: 'tags',
+    query
+  });
+});
 
-    if (!query) {
-      res.status(400).send({ message: 'Bad request!' });
-      return;
-    }
+const tagPost = asyncMiddleware(async (req, res, next) => {
+  const newTag = new Tag(req.body);
+  const createdTag = await newTag.save();
 
-    findAndSort(req, res, next, {
-      model: Tag,
-      as: 'tags',
-      query
-    });
+  if (!createdTag) {
+    errorResponse.serverError();
   }
-  catch (err) {
-    next(err);
-  }
-};
 
-const tagPost = async (req, res, next) => {
-  try {
-    const newTag = new Tag(req.body);
-    const createdTag = await newTag.save();
-
-    if (!createdTag) {
-      res.status(400).json({ message: 'Something went wrong' });
-      return;
-    }
-
-    res.json({ tag: createdTag });
-  }
-  catch (err) {
-    next(err);
-  }
-};
+  res.json(dataResponse({ tag: createdTag }));
+});
 
 export default {
   tagGet,

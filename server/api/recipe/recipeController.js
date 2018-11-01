@@ -5,331 +5,272 @@ import User from '../user/userModel';
 import Review from '../review/reviewModel';
 import Image from '../image/imageModel';
 import noteController from '../note/noteController';
+import { asyncMiddleware } from '../../helpers/async';
+import { errorResponse } from '../../helpers/error';
+import { dataResponse } from '../../helpers/response';
 import { validateQuery, findAndSort } from '../../helpers/query';
-import { cloudinaryPost, formatImages } from '../../helpers/images';
+import { cloudinaryPost, formatImages } from '../../helpers/image';
 import { merge } from 'lodash';
 
-const recipeGet = async (req, res, next) => {
-  try {
-    const recipe = await Recipe.findById(req.params.id);
+const recipeGet = asyncMiddleware(async (req, res, next) => {
+  const recipe = await Recipe.findById(req.params.id);
 
-    res.json({ recipe });
+  if (!recipe) {
+    errorResponse.searchNotFound('recipe');
   }
-  catch (err) {
-    next(err);
-  }
-};
 
-const recipeGetAll = async (req, res, next) => {
+  res.json(dataResponse({ recipe }));
+});
+
+const recipeGetAll = asyncMiddleware(async (req, res, next) => {
   // Make sure only permitted operations are sent to query
-  try {
-    const query = validateQuery(req.query, [
-      'tags',
-      'inc',
-      'notInc',
-      'createdAt',
-      'rating',
-      'stars',
-      'limit',
-      'offset'
-    ]);
+  const query = validateQuery(req.query, [
+    'tags',
+    'inc',
+    'notInc',
+    'createdAt',
+    'rating',
+    'stars',
+    'limit',
+    'offset'
+  ]);
 
-    if (!query) {
-      res.status(400).send({ message: 'Bad request!' });
-      return;
-    }
-
-    findAndSort(req, res, next, {
-      model: Recipe,
-      as: 'recipes',
-      query
-    });
+  if (!query) {
+    errorResponse.invalidQuery();
   }
-  catch (err) {
-    next(err);
+
+  findAndSort(req, res, next, {
+    model: Recipe,
+    as: 'recipes',
+    query
+  });
+});
+
+const recipePost = asyncMiddleware(async (req, res, next) => {
+  const userId = req.user._id;
+
+  // If there are images
+  // make sure they are in the correct format
+  if (req.body.images) {
+    req.body.images = formatImages(req.body.images);
   }
-};
 
-const recipePost = async (req, res, next) => {
-  try {
-    const userId = req.user._id;
+  const recipeWithAuthor = merge(
+    req.body,
+    { userId: new ObjectId(userId) }
+  );
+  const newRecipe = new Recipe(recipeWithAuthor);
+  const createdRecipe = await newRecipe.save();
 
-    // If there are images
-    // make sure they are in the correct format
-    if (req.body.images) {
-      req.body.images = await formatImages(req.body.images);
-    }
-
-    const recipeWithAuthor = merge(
-      req.body,
-      { userId: new ObjectId(userId) }
-    );
-    const newRecipe = new Recipe(recipeWithAuthor);
-    const createdRecipe = await newRecipe.save();
-
-    if (!createdRecipe) {
-      res.status(400).json({ message: 'Something went wrong' });
-      return;
-    }
-
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { $push: { recipes: createdRecipe._id } },
-      { new: true }
-    );
-
-    if (!updatedUser) {
-      res.status(400).json({ message: 'Something went wrong' });
-      return;
-    }
-
-    res.json({ user: updatedUser, recipe: createdRecipe });
+  if (!createdRecipe) {
+    errorResponse.serverError();
   }
-  catch (err) {
-    next(err);
+
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    { $push: { recipes: createdRecipe._id } },
+    { new: true }
+  );
+
+  if (!updatedUser) {
+    errorResponse.serverError();
   }
-};
 
-const recipePut = async (req, res, next) => {
-  try {
-    const userId = req.user._id;
-    const recipeId = req.params.id;
-    const recipeToUpdate = await Recipe
-      .findById(recipeId)
-      .select('userId');
+  res.json(dataResponse({ user: updatedUser, recipe: createdRecipe }));
+});
 
-    if (!recipeToUpdate) {
-      res.status(400).json({ message: 'No recipe with that id!' });
-      return;
-    }
+const recipePut = asyncMiddleware(async (req, res, next) => {
+  const userId = req.user._id;
+  const recipeId = req.params.id;
+  const recipeToUpdate = await Recipe
+    .findById(recipeId)
+    .select('userId');
 
-    if (!userId.equals(recipeToUpdate.userId)) {
-      res
-        .status(400)
-        .json({ message: 'Not authorized to update this recipe!' });
-      return;
-    }
-
-    // Remove unallowed updates
-    delete req.body.images;
-    delete req.body.reviews;
-    delete req.body.rating;
-
-    const updatedRecipe = await Recipe.findByIdAndUpdate(
-      recipeId,
-      { $set: req.body },
-      { new: true }
-    );
-
-    res.json({ recipe: updatedRecipe });
+  if (!recipeToUpdate) {
+    errorResponse.searchNotFound('recipe');
   }
-  catch (err) {
-    next(err);
+
+  if (!userId.equals(recipeToUpdate.userId)) {
+    errorResponse.unauthorized();
   }
-};
 
-const recipeReviewsGet = async (req, res, next) => {
-  try {
-    // Make sure only permitted operations are sent to query
-    const query = validateQuery(req.query, [
-      'createdAt',
-      'rating',
-      'stars',
-      'limit',
-      'offset'
-    ]);
+  // Remove unallowed updates
+  delete req.body.images;
+  delete req.body.reviews;
+  delete req.body.rating;
 
-    if (!query) {
-      res.status(400).send({ message: 'Bad request!' });
-      return;
-    }
+  const updatedRecipe = await Recipe.findByIdAndUpdate(
+    recipeId,
+    { $set: req.body },
+    { new: true }
+  );
 
-    findAndSort(req, res, next, {
-      model: Recipe,
-      path: 'reviews',
-      id: req.params.id,
-      query
-    });
+  res.json(dataResponse({ recipe: updatedRecipe }));
+});
+
+const recipeReviewsGet = asyncMiddleware(async (req, res, next) => {
+  // Make sure only permitted operations are sent to query
+  const query = validateQuery(req.query, [
+    'createdAt',
+    'rating',
+    'stars',
+    'limit',
+    'offset'
+  ]);
+
+  if (!query) {
+    errorResponse.invalidQuery();
   }
-  catch (err) {
-    next(err);
+
+  findAndSort(req, res, next, {
+    model: Recipe,
+    path: 'reviews',
+    id: req.params.id,
+    query
+  });
+});
+
+const recipeReviewsPost = asyncMiddleware(async (req, res, next) => {
+  const userId = req.user._id;
+  const recipeId = req.params.id;
+  const userReview = {
+    userId,
+    recipeId,
+    text: req.body.text,
+    rating: Number(req.body.rating)
+  };
+  const recipeToReview = await Recipe.findById(recipeId);
+
+  if (!recipeToReview) {
+    errorResponse.searchNotFound('recipe');
   }
-};
 
-const recipeReviewsPost = async (req, res, next) => {
-  try {
-    const userId = req.user._id;
-    const recipeId = req.params.id;
-    const userReview = {
-      userId,
-      recipeId,
-      text: req.body.text,
-      rating: Number(req.body.rating)
-    };
-    const recipeToReview = await Recipe.findById(recipeId);
+  const newReview = await new Review(userReview);
+  const createdReview = await newReview.save();
 
-    if (!recipeToReview) {
-      res.status(400).json({ message: 'No recipe with that id!' });
-      return;
-    }
-
-    const newReview = await new Review(userReview);
-    const createdReview = await newReview.save();
-    const updatedRecipe = await Recipe.findByIdAndUpdate(
-      recipeId,
-      { $push: { reviews: createdReview._id } },
-      { new: true }
-    );
-
-    if (!updatedRecipe) {
-      res.status(400).json({ message: 'Something went wrong' });
-      return;
-    }
-
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { $push: { reviews: createdReview._id } },
-      { new: true }
-    );
-
-    if (!updatedUser) {
-      res.status(400).json({ message: 'Something went wrong' });
-      return;
-    }
-
-    res.json({
-      user: updatedUser,
-      recipe: updatedRecipe,
-      review: newReview
-    });
+  if (!createdReview) {
+    errorResponse.serverError();
   }
-  catch (err) {
-    next(err);
+
+  const updatedRecipe = await Recipe.findByIdAndUpdate(
+    recipeId,
+    { $push: { reviews: createdReview._id } },
+    { new: true }
+  );
+
+  if (!updatedRecipe) {
+    errorResponse.serverError();
   }
-};
 
-const recipeImagesGet = async (req, res, next) => {
-  try {
-    // Make sure only permitted operations are sent to query
-    const query = validateQuery(req.query, [
-      'createdAt',
-      'limit',
-      'offset'
-    ]);
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    { $push: { reviews: createdReview._id } },
+    { new: true }
+  );
 
-    if (!query) {
-      res.status(400).send({ message: 'Bad request!' });
-      return;
-    }
-
-    findAndSort(req, res, next, {
-      model: Recipe,
-      path: 'images',
-      id: req.params.id,
-      query
-    });
+  if (!updatedUser) {
+    errorResponse.serverError();
   }
-  catch (err) {
-    next(err);
-  }
-};
 
-const recipeImagesPost = async (req, res, next) => {
+  res.json(dataResponse({
+    user: updatedUser,
+    recipe: updatedRecipe,
+    review: newReview
+  }));
+});
+
+const recipeImagesGet = asyncMiddleware(async (req, res, next) => {
+
+  // Make sure only permitted operations are sent to query
+  const query = validateQuery(req.query, [
+    'createdAt',
+    'limit',
+    'offset'
+  ]);
+
+  if (!query) {
+    errorResponse.invalidQuery();
+  }
+
+  findAndSort(req, res, next, {
+    model: Recipe,
+    path: 'images',
+    id: req.params.id,
+    query
+  });
+});
+
+const recipeImagesPost = asyncMiddleware(async (req, res, next) => {
   // Request needs to be enctype="multipart/form-data"
   // Response in JSON
-  try {
-    const userId = req.user._id;
-    const recipeId = req.params.id;
-    const image = req.file.path;
+  const userId = req.user._id;
+  const recipeId = req.params.id;
+  const image = req.file.path;
 
-    const createdCloudinary = await cloudinaryPost(image, {
-      width: 600,
-      height: 600,
-      crop: 'limit'
-    });
+  const createdCloudinary = await cloudinaryPost(image, {
+    width: 600,
+    height: 600,
+    crop: 'limit'
+  });
 
-    if (!createdCloudinary) {
-      res.status(400).json({ message: 'Something went wrong' });
-      return;
-    }
-
-    const newImage = new Image({
-      userId,
-      recipeId,
-      image: createdCloudinary.secure_url,
-      imageId: createdCloudinary.public_id
-    });
-    const createdImage = await newImage.save();
-
-    if (!createdImage) {
-      res.status(400).json({ message: 'Something went wrong' });
-      return;
-    }
-
-    const updatedRecipe = await Recipe.findByIdAndUpdate(
-      recipeId,
-      { $push: { images: createdImage._id } },
-      { new: true }
-    );
-
-    if (!updatedRecipe) {
-      res.status(400).json({ message: 'Something went wrong' });
-      return;
-    }
-
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { $push: { images: createdImage._id } },
-      { new: true }
-    );
-
-    if (!updatedUser) {
-      res.status(400).json({ message: 'Something went wrong' });
-      return;
-    }
-
-    res.json({ user: updatedUser, recipe: updatedRecipe, image: createdImage });
+  if (!createdCloudinary) {
+    errorResponse.serverError();
   }
-  catch (err) {
-    next(err);
-  }
-};
 
-const recipeNotesGet = async (req, res, next) => {
-  try {
-    noteController.noteGet(req, res, next);
-  }
-  catch (err) {
-    next(err);
-  }
-};
+  const newImage = new Image({
+    userId,
+    recipeId,
+    image: createdCloudinary.secure_url,
+    imageId: createdCloudinary.public_id
+  });
+  const createdImage = await newImage.save();
 
-const recipeNotesPost = async (req, res, next) => {
-  try {
-    noteController.notePost(req, res, next);
+  if (!createdImage) {
+    errorResponse.serverError();
   }
-  catch (err) {
-    next(err);
-  }
-};
 
-const recipeNotesPut = async (req, res, next) => {
-  try {
-    noteController.notePut(req, res, next);
-  }
-  catch (err) {
-    next(err);
-  }
-};
+  const updatedRecipe = await Recipe.findByIdAndUpdate(
+    recipeId,
+    { $push: { images: createdImage._id } },
+    { new: true }
+  );
 
-const recipeNotesDelete = async (req, res, next) => {
-  try {
-    noteController.noteDelete(req, res, next);
+  if (!updatedRecipe) {
+    errorResponse.serverError();
   }
-  catch (err) {
-    next(err);
+
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    { $push: { images: createdImage._id } },
+    { new: true }
+  );
+
+  if (!updatedUser) {
+    errorResponse.serverError();
   }
-};
+
+  res.json(dataResponse({
+    user: updatedUser,
+    recipe: updatedRecipe,
+    image: createdImage
+  }));
+});
+
+const recipeNotesGet = asyncMiddleware(async (req, res, next) => {
+  noteController.noteGet(req, res, next);
+});
+
+const recipeNotesPost = asyncMiddleware(async (req, res, next) => {
+  noteController.notePost(req, res, next);
+});
+
+const recipeNotesPut = asyncMiddleware(async (req, res, next) => {
+  noteController.notePut(req, res, next);
+});
+
+const recipeNotesDelete = asyncMiddleware(async (req, res, next) => {
+  noteController.noteDelete(req, res, next);
+});
 
 export default {
   recipeGet,

@@ -2,6 +2,7 @@ import express from 'express';
 const app = express();
 import connectToDB from './db';
 import appMiddleware from './middleware/appMiddleware';
+import errorMiddleware from './middleware/errorMiddleware';
 import authRouter from './auth/authRouter';
 import apiRouter from './api/apiRouter';
 
@@ -15,14 +16,7 @@ appMiddleware(app);
 app.use('/auth', authRouter);
 app.use('/api/v1', apiRouter);
 
-// Catch errors
-app.use((err, req, res, next) => {
-  // Handle errors better
-  // Just for initial testing
-  // Check for server/db specific errors
-  // and send generic response and log
-  console.log(err);
-  res.status(400).json({ error: err.message });
-});
+// Handle errors
+app.use(errorMiddleware);
 
 export default app;

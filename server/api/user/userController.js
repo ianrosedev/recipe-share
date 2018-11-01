@@ -3,275 +3,213 @@ import recipeController from '../recipe/recipeController';
 import collectionController from '../collection/collectionController';
 import imageController from '../image/imageController';
 import { signToken } from '../../auth/auth';
+import { asyncMiddleware } from '../../helpers/async';
+import { errorResponse } from '../../helpers/error';
+import { dataResponse } from '../../helpers/response';
 import { validateQuery, findAndSort } from '../../helpers/query';
-import { formatImages } from '../../helpers/images';
+import { formatImages } from '../../helpers/image';
 import { merge } from 'lodash';
 
-const userGet = async (req, res, next) => {
-  try {
-    const id = req.params.id;
-    const user = await User.findById(
-      id,
-      'username location snippet profileImage'
-    );
+const userGet = asyncMiddleware(async (req, res, next) => {
+  const userId = req.params.id;
+  const user = await User.findById(
+    userId,
+    'username location snippet profileImage'
+  );
 
-    res.json({ user });
+  if (!user) {
+    errorResponse.searchNotFound('user');
   }
-  catch (err) {
-    next(err);
+
+  res.json(dataResponse({ user }));
+});
+
+const userPost = asyncMiddleware(async (req, res, next) => {
+  // If there are images
+  // make sure they are in the correct format
+  if (req.body.images) {
+    req.body.images = await formatImages(req.body.images);
   }
-};
 
-const userPost = async (req, res, next) => {
-  try {
-    // If there are images
-    // make sure they are in the correct format
-    if (req.body.images) {
-      req.body.images = await formatImages(req.body.images);
-    }
+  const newUser = new User(req.body);
+  newUser.password = await newUser.hashPassword(newUser.password);
+  const createdUser = await newUser.save();
+  const token = await signToken(createdUser._id);
 
-    const newUser = new User(req.body);
-    newUser.password = await newUser.hashPassword(newUser.password);
-    const createdUser = await newUser.save();
-    const token = await signToken(createdUser._id);
+  res.status(201).json(dataResponse({ token }, 201));
+});
 
-    res.status(201).json({ token });
+const userPut = asyncMiddleware(async (req, res, next) => {
+  const user = req.user;
+
+  // If there are images
+  // make sure they are in the correct format
+  if (req.body.images) {
+    req.body.images = await formatImages(req.body.images);
   }
-  catch (err) {
-    next(err);
+
+  const userUpdate = req.body;
+  const update = merge(user, userUpdate);
+  const updatedUser = await user.save(update);
+
+  res.json(dataResponse({ user: updatedUser }));
+});
+
+const userDelete = asyncMiddleware(async (req, res, next) => {
+  const user = req.user;
+  const destroyedUser = await user.remove();
+
+  if (!destroyedUser) {
+    errorResponse.serverError();
   }
-};
 
-const userPut = async (req, res, next) => {
-  try {
-    const user = req.user;
+  res.json(dataResponse({ destroyed: destroyedUser.id }));
+});
 
-    // If there are images
-    // make sure they are in the correct format
-    if (req.body.images) {
-      req.body.images = await formatImages(req.body.images);
-    }
+const userMeGet = asyncMiddleware(async (req, res, next) => {
+  const user = req.user;
 
-    const userUpdate = req.body;
-    const update = merge(user, userUpdate);
-    const updatedUser = await user.save(update);
+  res.json(dataResponse({ user }));
+});
 
-    res.json({ user: updatedUser });
+const userRecipesGet = asyncMiddleware(async (req, res, next) => {
+  // Make sure only permitted operations are sent to query
+  const query = validateQuery(req.query, [
+    'createdAt',
+    'rating',
+    'stars',
+    'limit',
+    'offset'
+  ]);
+
+  if (!query) {
+    errorResponse.invalidQuery();
   }
-  catch (err) {
-    next(err);
+
+  findAndSort(req, res, next, {
+    model: User,
+    path: 'recipes',
+    id: req.params.id,
+    query
+  });
+});
+
+const userRecipesPost = asyncMiddleware(async (req, res, next) => {
+  const userId = req.user._id;
+  const paramId = req.params.id;
+
+  if (!userId.equals(paramId)) {
+    errorResponse.unauthorized();
   }
-};
 
-const userDelete = async (req, res, next) => {
-  try {
-    const user = req.user;
-    const destroyedUser = await user.remove();
+  recipeController.recipePost(req, res, next);
+});
 
-    res.json({ destroyed: destroyedUser.id });
+const userReviewsGet = asyncMiddleware(async (req, res, next) => {
+  // Make sure only permitted operations are sent to query
+  const query = validateQuery(req.query, [
+    'createdAt',
+    'rating',
+    'stars',
+    'limit',
+    'offset'
+  ]);
+
+  if (!query) {
+    errorResponse.invalidQuery();
   }
-  catch (err) {
-    next(err);
+
+  findAndSort(req, res, next, {
+    model: User,
+    path: 'reviews',
+    id: req.params.id,
+    query
+  });
+});
+
+const userCollectionsGet = asyncMiddleware(async (req, res, next) => {
+  // Make sure only permitted operations are sent to query
+  const query = validateQuery(req.query, [
+    'createdAt',
+    'limit',
+    'offset'
+  ]);
+
+  if (!query) {
+    errorResponse.invalidQuery();
   }
-};
 
-const userMeGet = async (req, res, next) => {
-  try {
-    const user = req.user;
+  findAndSort(req, res, next, {
+    model: User,
+    path: 'collections',
+    id: req.params.id,
+    query
+  });
+});
 
-    res.json({ user });
+const userCollectionsGetAll = asyncMiddleware(async (req, res, next) => {
+  // Make sure only permitted operations are sent to query
+  const query = validateQuery(req.query, [
+    'createdAt',
+    'limit',
+    'offset'
+  ]);
+
+  if (!query) {
+    errorResponse.invalidQuery();
   }
-  catch (err) {
-    next(err);
+
+  findAndSort(req, res, next, {
+    model: User,
+    path: 'collections',
+    id: req.params.id,
+    query,
+    // Only allow public collections
+    filter: collection => collection.isPrivate === false
+  });
+});
+
+const userCollectionsPost = asyncMiddleware(async (req, res, next) => {
+  const userId = req.user._id;
+  const paramId = req.params.id;
+
+  if (!userId.equals(paramId)) {
+    errorResponse.unauthorized();
   }
-};
 
-const userRecipesGet = async (req, res, next) => {
-  try {
-    // Make sure only permitted operations are sent to query
-    const query = validateQuery(req.query, [
-      'createdAt',
-      'rating',
-      'stars',
-      'limit',
-      'offset'
-    ]);
+  collectionController.collectionPost(req, res, next);
+});
 
-    if (!query) {
-      res.status(400).send({ message: 'Bad request!' });
-      return;
-    }
+const userImagesGet = asyncMiddleware(async (req, res, next) => {
+  // Make sure only permitted operations are sent to query
+  const query = validateQuery(req.query, [
+    'createdAt',
+    'limit',
+    'offset'
+  ]);
 
-    findAndSort(req, res, next, {
-      model: User,
-      path: 'recipes',
-      id: req.params.id,
-      query
-    });
+  if (!query) {
+    errorResponse.invalidQuery();
   }
-  catch (err) {
-    next(err);
+
+  findAndSort(req, res, next, {
+    model: User,
+    path: 'images',
+    id: req.params.id,
+    query
+  });
+});
+
+const userImagesPost = asyncMiddleware(async (req, res, next) => {
+  const userId = req.user._id;
+  const paramId = req.params.id;
+
+  if (!userId.equals(paramId)) {
+    errorResponse.unauthorized();
   }
-};
 
-const userRecipesPost = async (req, res, next) => {
-  try {
-    const userId = req.user._id;
-    const paramId = req.params.id;
-
-    if (!userId.equals(paramId)) {
-      res.status(401).send({ message: 'Unauthorized!' });
-      return;
-    }
-
-    recipeController.recipePost(req, res, next);
-  }
-  catch (err) {
-    next(err);
-  }
-};
-
-const userReviewsGet = async (req, res, next) => {
-  try {
-    // Make sure only permitted operations are sent to query
-    const query = validateQuery(req.query, [
-      'createdAt',
-      'rating',
-      'stars',
-      'limit',
-      'offset'
-    ]);
-
-    if (!query) {
-      res.status(400).send({ message: 'Bad request!' });
-      return;
-    }
-
-    findAndSort(req, res, next, {
-      model: User,
-      path: 'reviews',
-      id: req.params.id,
-      query
-    });
-  }
-  catch (err) {
-    next(err);
-  }
-};
-
-const userCollectionsGet = async (req, res, next) => {
-  try {
-    // Make sure only permitted operations are sent to query
-    const query = validateQuery(req.query, [
-      'createdAt',
-      'limit',
-      'offset'
-    ]);
-
-    if (!query) {
-      res.status(400).send({ message: 'Bad request!' });
-      return;
-    }
-
-    findAndSort(req, res, next, {
-      model: User,
-      path: 'collections',
-      id: req.params.id,
-      query
-    });
-  }
-  catch (err) {
-    next(err);
-  }
-};
-
-const userCollectionsGetAll = async (req, res, next) => {
-  try {
-    // Make sure only permitted operations are sent to query
-    const query = validateQuery(req.query, [
-      'createdAt',
-      'limit',
-      'offset'
-    ]);
-
-    if (!query) {
-      res.status(400).send({ message: 'Bad request!' });
-      return;
-    }
-
-    findAndSort(req, res, next, {
-      model: User,
-      path: 'collections',
-      id: req.params.id,
-      query,
-      // Only allow public collections
-      filter: collection => collection.isPrivate === false
-    });
-  }
-  catch (err) {
-    next(err);
-  }
-};
-
-const userCollectionsPost = async (req, res, next) => {
-  try {
-    const userId = req.user._id;
-    const paramId = req.params.id;
-
-    if (!userId.equals(paramId)) {
-      res.status(401).send({ message: 'Unauthorized!' });
-      return;
-    }
-
-    collectionController.collectionPost(req, res, next);
-  }
-  catch (err) {
-    next(err);
-  }
-};
-
-const userImagesGet = async (req, res, next) => {
-  try {
-    // Make sure only permitted operations are sent to query
-    const query = validateQuery(req.query, [
-      'createdAt',
-      'limit',
-      'offset'
-    ]);
-
-    if (!query) {
-      res.status(400).send({ message: 'Bad request!' });
-      return;
-    }
-
-    findAndSort(req, res, next, {
-      model: User,
-      path: 'images',
-      id: req.params.id,
-      query
-    });
-  }
-  catch (err) {
-    next(err);
-  }
-};
-
-const userImagesPost = async (req, res, next) => {
-  try {
-    const userId = req.user._id;
-    const paramId = req.params.id;
-
-    if (!userId.equals(paramId)) {
-      res.status(401).send({ message: 'Unauthorized!' });
-      return;
-    }
-
-    imageController.imagePost(req, res, next);
-  }
-  catch (err) {
-    next(err);
-  }
-};
+  imageController.imagePost(req, res, next);
+});
 
 export default {
   userGet,

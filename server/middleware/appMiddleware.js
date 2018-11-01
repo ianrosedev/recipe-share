@@ -1,7 +1,7 @@
 import { json } from 'express';
 import morgan from 'morgan';
 
-const appMiddleware = (app) => {
+export default (app) => {
   // Parse JSON request body
   app.use(json());
 
@@ -10,5 +10,3 @@ const appMiddleware = (app) => {
     app.use(morgan('dev'));
   }
 };
-
-export default appMiddleware;
