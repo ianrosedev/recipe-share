@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
-const Schema = mongoose.Schema;
+
+const { Schema } = mongoose;
 
 const schema = new Schema(
   {
@@ -7,11 +8,11 @@ const schema = new Schema(
       type: String,
       trim: true,
       required: true,
-      unique: true
-    }
+      unique: true,
+    },
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 );
 

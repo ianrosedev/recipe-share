@@ -1,5 +1,4 @@
 import { Router } from 'express';
-const router = Router();
 import userRouter from './user/userRouter';
 import recipeRouter from './recipe/recipeRouter';
 import reviewRouter from './review/reviewRouter';
@@ -7,6 +6,8 @@ import imageRouter from './image/imageRouter';
 import collectionRouter from './collection/collectionRouter';
 import tagRouter from './tag/tagRouter';
 import noteRouter from './note/noteRouter';
+
+const router = Router();
 
 router.use('/users', userRouter);
 router.use('/recipes', recipeRouter);

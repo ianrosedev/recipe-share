@@ -1,7 +1,7 @@
 import { json } from 'express';
 import morgan from 'morgan';
 
-export default (app) => {
+export default app => {
   // Parse JSON request body
   app.use(json());
 

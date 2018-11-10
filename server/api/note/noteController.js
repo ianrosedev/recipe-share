@@ -1,11 +1,12 @@
 import mongoose from 'mongoose';
-const { ObjectId } = mongoose.Types;
+import { merge } from 'lodash';
 import Note from './noteModel';
 import User from '../user/userModel';
 import { asyncMiddleware } from '../../helpers/async';
 import { errorResponse } from '../../helpers/error';
 import { dataResponse } from '../../helpers/response';
-import { merge } from 'lodash';
+
+const { ObjectId } = mongoose.Types;
 
 const noteGet = asyncMiddleware(async (req, res, next) => {
   const userId = req.user._id;
@@ -63,7 +64,7 @@ const notePut = asyncMiddleware(async (req, res, next) => {
   );
 
   if (!notes) {
-    errorResponse.customBadRequest('Notes don\'t exist');
+    errorResponse.customBadRequest("Notes don't exist");
   }
 
   res.json(dataResponse({ notes }));
@@ -75,7 +76,7 @@ const noteDelete = asyncMiddleware(async (req, res, next) => {
   const destroyedNotes = await Note.findOneAndDelete({ userId, recipeId });
 
   if (!destroyedNotes) {
-    errorResponse.customBadRequest('Notes don\'t exist');
+    errorResponse.customBadRequest("Notes don't exist");
   }
 
   const updatedUser = await User.findByIdAndUpdate(
@@ -84,15 +85,17 @@ const noteDelete = asyncMiddleware(async (req, res, next) => {
     { new: true }
   );
 
-  res.json(dataResponse({
-    user: updatedUser,
-    notes: destroyedNotes._id
-  }));
+  res.json(
+    dataResponse({
+      user: updatedUser,
+      notes: destroyedNotes._id,
+    })
+  );
 });
 
 export default {
   noteGet,
   notePost,
   notePut,
-  noteDelete
+  noteDelete,
 };

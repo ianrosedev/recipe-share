@@ -1,31 +1,34 @@
 import mongoose from 'mongoose';
-const Schema = mongoose.Schema;
+
+const { Schema } = mongoose;
 
 const schema = new Schema(
   {
     userId: {
       type: Schema.Types.ObjectId,
-      required: true
+      required: true,
     },
     name: {
       type: String,
       default: 'My Collection',
       minLegth: 1,
       trim: true,
-      required: true
+      required: true,
     },
-    recipes: [{
-      type: Schema.Types.ObjectId,
-      unique: true
-    }],
+    recipes: [
+      {
+        type: Schema.Types.ObjectId,
+        unique: true,
+      },
+    ],
     isPrivate: {
       type: Boolean,
       default: true,
-      required: true
-    }
+      required: true,
+    },
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 );
 

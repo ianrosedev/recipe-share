@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-const { ObjectId } = mongoose.Types;
+import { merge } from 'lodash';
 import Recipe from './recipeModel';
 import User from '../user/userModel';
 import Review from '../review/reviewModel';
@@ -10,7 +10,8 @@ import { errorResponse } from '../../helpers/error';
 import { dataResponse } from '../../helpers/response';
 import { validateQuery, findAndSort } from '../../helpers/query';
 import { cloudinaryPost, formatImages } from '../../helpers/image';
-import { merge } from 'lodash';
+
+const { ObjectId } = mongoose.Types;
 
 const recipeGet = asyncMiddleware(async (req, res, next) => {
   const recipe = await Recipe.findById(req.params.id);
@@ -32,7 +33,7 @@ const recipeGetAll = asyncMiddleware(async (req, res, next) => {
     'rating',
     'stars',
     'limit',
-    'offset'
+    'offset',
   ]);
 
   if (!query) {
@@ -42,7 +43,7 @@ const recipeGetAll = asyncMiddleware(async (req, res, next) => {
   findAndSort(req, res, next, {
     model: Recipe,
     as: 'recipes',
-    query
+    query,
   });
 });
 
@@ -55,10 +56,7 @@ const recipePost = asyncMiddleware(async (req, res, next) => {
     req.body.images = formatImages(req.body.images);
   }
 
-  const recipeWithAuthor = merge(
-    req.body,
-    { userId: new ObjectId(userId) }
-  );
+  const recipeWithAuthor = merge(req.body, { userId: new ObjectId(userId) });
   const newRecipe = new Recipe(recipeWithAuthor);
   const createdRecipe = await newRecipe.save();
 
@@ -82,9 +80,7 @@ const recipePost = asyncMiddleware(async (req, res, next) => {
 const recipePut = asyncMiddleware(async (req, res, next) => {
   const userId = req.user._id;
   const recipeId = req.params.id;
-  const recipeToUpdate = await Recipe
-    .findById(recipeId)
-    .select('userId');
+  const recipeToUpdate = await Recipe.findById(recipeId).select('userId');
 
   if (!recipeToUpdate) {
     errorResponse.searchNotFound('recipe');
@@ -115,7 +111,7 @@ const recipeReviewsGet = asyncMiddleware(async (req, res, next) => {
     'rating',
     'stars',
     'limit',
-    'offset'
+    'offset',
   ]);
 
   if (!query) {
@@ -126,7 +122,7 @@ const recipeReviewsGet = asyncMiddleware(async (req, res, next) => {
     model: Recipe,
     path: 'reviews',
     id: req.params.id,
-    query
+    query,
   });
 });
 
@@ -137,7 +133,7 @@ const recipeReviewsPost = asyncMiddleware(async (req, res, next) => {
     userId,
     recipeId,
     text: req.body.text,
-    rating: Number(req.body.rating)
+    rating: Number(req.body.rating),
   };
   const recipeToReview = await Recipe.findById(recipeId);
 
@@ -172,21 +168,18 @@ const recipeReviewsPost = asyncMiddleware(async (req, res, next) => {
     errorResponse.serverError();
   }
 
-  res.json(dataResponse({
-    user: updatedUser,
-    recipe: updatedRecipe,
-    review: newReview
-  }));
+  res.json(
+    dataResponse({
+      user: updatedUser,
+      recipe: updatedRecipe,
+      review: newReview,
+    })
+  );
 });
 
 const recipeImagesGet = asyncMiddleware(async (req, res, next) => {
-
   // Make sure only permitted operations are sent to query
-  const query = validateQuery(req.query, [
-    'createdAt',
-    'limit',
-    'offset'
-  ]);
+  const query = validateQuery(req.query, ['createdAt', 'limit', 'offset']);
 
   if (!query) {
     errorResponse.invalidQuery();
@@ -196,12 +189,12 @@ const recipeImagesGet = asyncMiddleware(async (req, res, next) => {
     model: Recipe,
     path: 'images',
     id: req.params.id,
-    query
+    query,
   });
 });
 
 const recipeImagesPost = asyncMiddleware(async (req, res, next) => {
-  // Request needs to be enctype="multipart/form-data"
+  // Request needs to be enctype='multipart/form-data'
   // Response in JSON
   const userId = req.user._id;
   const recipeId = req.params.id;
@@ -210,7 +203,7 @@ const recipeImagesPost = asyncMiddleware(async (req, res, next) => {
   const createdCloudinary = await cloudinaryPost(image, {
     width: 600,
     height: 600,
-    crop: 'limit'
+    crop: 'limit',
   });
 
   if (!createdCloudinary) {
@@ -221,7 +214,7 @@ const recipeImagesPost = asyncMiddleware(async (req, res, next) => {
     userId,
     recipeId,
     image: createdCloudinary.secure_url,
-    imageId: createdCloudinary.public_id
+    imageId: createdCloudinary.public_id,
   });
   const createdImage = await newImage.save();
 
@@ -249,11 +242,13 @@ const recipeImagesPost = asyncMiddleware(async (req, res, next) => {
     errorResponse.serverError();
   }
 
-  res.json(dataResponse({
-    user: updatedUser,
-    recipe: updatedRecipe,
-    image: createdImage
-  }));
+  res.json(
+    dataResponse({
+      user: updatedUser,
+      recipe: updatedRecipe,
+      image: createdImage,
+    })
+  );
 });
 
 const recipeNotesGet = asyncMiddleware(async (req, res, next) => {
@@ -284,5 +279,5 @@ export default {
   recipeNotesGet,
   recipeNotesPost,
   recipeNotesPut,
-  recipeNotesDelete
+  recipeNotesDelete,
 };

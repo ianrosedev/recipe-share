@@ -1,18 +1,17 @@
 import mongoose from 'mongoose';
-const { ObjectId } = mongoose.Types;
+import { merge } from 'lodash';
 import Collection from './collectionModel';
 import User from '../user/userModel';
 import { asyncMiddleware } from '../../helpers/async';
 import { errorResponse } from '../../helpers/error';
 import { dataResponse } from '../../helpers/response';
 import { validateQuery, findAndSort } from '../../helpers/query';
-import { merge } from 'lodash';
+
+const { ObjectId } = mongoose.Types;
 
 const collectionGet = asyncMiddleware(async (req, res, next) => {
   const collectionId = req.params.id;
-  const collection = await Collection
-    .findById(collectionId)
-    .lean();
+  const collection = await Collection.findById(collectionId).lean();
 
   if (collection.isPrivate) {
     errorResponse.unauthorized();
@@ -23,11 +22,7 @@ const collectionGet = asyncMiddleware(async (req, res, next) => {
 
 const collectionGetAll = asyncMiddleware(async (req, res, next) => {
   // Make sure only permitted operations are sent to query
-  const query = validateQuery(req.query, [
-    'createdAt',
-    'limit',
-    'offset'
-  ]);
+  const query = validateQuery(req.query, ['createdAt', 'limit', 'offset']);
 
   if (!query) {
     errorResponse.invalidQuery();
@@ -38,16 +33,15 @@ const collectionGetAll = asyncMiddleware(async (req, res, next) => {
     as: 'collections',
     query,
     // Only allow public collections
-    filter: collection => collection.isPrivate === false
+    filter: collection => collection.isPrivate === false,
   });
 });
 
 const collectionPost = asyncMiddleware(async (req, res, next) => {
   const userId = req.user._id;
-  const collectionWithUserId = merge(
-    req.body,
-    { userId: new ObjectId(userId) }
-  );
+  const collectionWithUserId = merge(req.body, {
+    userId: new ObjectId(userId),
+  });
   const newCollection = new Collection(collectionWithUserId);
   const createdCollection = await newCollection.save();
 
@@ -65,35 +59,40 @@ const collectionPost = asyncMiddleware(async (req, res, next) => {
     errorResponse.serverError();
   }
 
-  res.json(dataResponse({
-    user: updatedUser,
-    collection: createdCollection
-  }));
+  res.json(
+    dataResponse({
+      user: updatedUser,
+      collection: createdCollection,
+    })
+  );
 });
 
 const collectionPut = asyncMiddleware(async (req, res, next) => {
   const userId = req.user._id;
   const collectionId = req.params.id;
   const collectionToUpdate = await Collection.findById(collectionId);
-  const body = req.body;
+  const { body } = req;
   const options = {};
 
   if (!userId.equals(collectionToUpdate.userId)) {
     errorResponse.unauthorized();
   }
 
-  if (body.hasOwnProperty('name') && body.name.length === 0) {
+  if (
+    Object.prototype.hasOwnProperty.call(body, 'name') &&
+    body.name.length === 0
+  ) {
     errorResponse.customBadRequest('Name cannot be empty');
   }
 
-  if (body.name || body.hasOwnProperty('isPrivate')) {
+  if (body.name || Object.prototype.hasOwnProperty.call(body, 'isPrivate')) {
     options.$set = {};
 
     if (body.name) {
       options.$set.name = body.name;
     }
 
-    if (body.hasOwnProperty('isPrivate')) {
+    if (Object.prototype.hasOwnProperty.call(body, 'isPrivate')) {
       options.$set.isPrivate = body.isPrivate;
     }
   }
@@ -128,9 +127,9 @@ const collectionPut = asyncMiddleware(async (req, res, next) => {
 const collectionDelete = asyncMiddleware(async (req, res, next) => {
   const userId = req.user._id;
   const collectionId = req.params.id;
-  const collectionToDestroy = await Collection
-    .findById(collectionId)
-    .select('userId');
+  const collectionToDestroy = await Collection.findById(collectionId).select(
+    'userId'
+  );
 
   if (!collectionToDestroy) {
     errorResponse.searchNotFound('collection');
@@ -147,10 +146,12 @@ const collectionDelete = asyncMiddleware(async (req, res, next) => {
     { new: true }
   );
 
-  res.json(dataResponse({
-    user: updatedUser,
-    collection: destroyedCollection._id
-  }));
+  res.json(
+    dataResponse({
+      user: updatedUser,
+      collection: destroyedCollection._id,
+    })
+  );
 });
 
 export default {
@@ -158,5 +159,5 @@ export default {
   collectionGetAll,
   collectionPost,
   collectionPut,
-  collectionDelete
+  collectionDelete,
 };

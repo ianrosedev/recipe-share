@@ -8,7 +8,7 @@ import { dataResponse } from '../../helpers/response';
 import { cloudinaryPost, cloudinaryDelete } from '../../helpers/image';
 
 const imageGet = asyncMiddleware(async (req, res, next) => {
-  const id = req.params.id;
+  const { id } = req.params;
   const image = await Image.findById(id);
 
   if (!image) {
@@ -27,7 +27,7 @@ const imagePost = asyncMiddleware(async (req, res, next) => {
   const createdCloudinary = await cloudinaryPost(image, {
     width: 300,
     height: 500,
-    crop: 'limit'
+    crop: 'limit',
   });
 
   if (!createdCloudinary) {
@@ -37,7 +37,7 @@ const imagePost = asyncMiddleware(async (req, res, next) => {
   const newImage = new Image({
     userId,
     image: createdCloudinary.secure_url,
-    imageId: createdCloudinary.public_id
+    imageId: createdCloudinary.public_id,
   });
   const createdImage = await newImage.save();
 
@@ -115,14 +115,16 @@ const imageDelete = asyncMiddleware(async (req, res, next) => {
     }
   }
 
-  res.json(dataResponse({
-    user: updatedUser,
-    destroyed: destroyedImage._id
-  }));
+  res.json(
+    dataResponse({
+      user: updatedUser,
+      destroyed: destroyedImage._id,
+    })
+  );
 });
 
 export default {
   imageGet,
   imagePost,
-  imageDelete
+  imageDelete,
 };

@@ -11,7 +11,7 @@ const reviewGet = asyncMiddleware(async (req, res, next) => {
   const review = await Review.findById(reviewId);
 
   if (!review) {
-    errorResponse.searchNotFound('review')
+    errorResponse.searchNotFound('review');
   }
 
   res.json(dataResponse({ review }));
@@ -24,7 +24,7 @@ const reviewGetAll = asyncMiddleware(async (req, res, next) => {
     'rating',
     'stars',
     'limit',
-    'offset'
+    'offset',
   ]);
 
   if (!query) {
@@ -34,7 +34,7 @@ const reviewGetAll = asyncMiddleware(async (req, res, next) => {
   findAndSort(req, res, next, {
     model: Review,
     as: 'reviews',
-    query
+    query,
   });
 });
 
@@ -59,9 +59,9 @@ const reviewPut = asyncMiddleware(async (req, res, next) => {
 const reviewDelete = asyncMiddleware(async (req, res, next) => {
   const userId = req.user._id;
   const reviewId = req.params.id;
-  const reviewToDestroy = await Review
-    .findById(reviewId)
-    .select('userId recipeId');
+  const reviewToDestroy = await Review.findById(reviewId).select(
+    'userId recipeId'
+  );
 
   if (!reviewToDestroy) {
     errorResponse.searchNotFound('review');
@@ -99,16 +99,18 @@ const reviewDelete = asyncMiddleware(async (req, res, next) => {
     return;
   }
 
-  res.json(dataResponse({
-    user: updatedUser,
-    recipe: updatedRecipe,
-    review: destroyedReview._id
-  }));
+  res.json(
+    dataResponse({
+      user: updatedUser,
+      recipe: updatedRecipe,
+      review: destroyedReview._id,
+    })
+  );
 });
 
 export default {
   reviewGet,
   reviewGetAll,
   reviewPut,
-  reviewDelete
+  reviewDelete,
 };

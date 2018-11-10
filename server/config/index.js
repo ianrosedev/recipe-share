@@ -1,8 +1,8 @@
+import dotenv from 'dotenv';
 import { merge } from 'lodash';
 import development from './development';
 import testing from './testing';
 import production from './production';
-import dotenv from 'dotenv';
 
 // NODE_ENV setup
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';

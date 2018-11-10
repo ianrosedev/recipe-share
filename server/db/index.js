@@ -10,8 +10,7 @@ export default async (config = appConfig) => {
     if (connected === mongoose) {
       console.log('🎉  connected to DB at:', appConfig.db.url);
     }
-  }
-  catch (err) {
+  } catch (err) {
     console.log('ERROR:', err.message);
   }
 };

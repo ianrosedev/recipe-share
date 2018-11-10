@@ -1,3 +1,4 @@
+import { merge } from 'lodash';
 import User from './userModel';
 import recipeController from '../recipe/recipeController';
 import collectionController from '../collection/collectionController';
@@ -8,7 +9,6 @@ import { errorResponse } from '../../helpers/error';
 import { dataResponse } from '../../helpers/response';
 import { validateQuery, findAndSort } from '../../helpers/query';
 import { formatImages } from '../../helpers/image';
-import { merge } from 'lodash';
 
 const userGet = asyncMiddleware(async (req, res, next) => {
   const userId = req.params.id;
@@ -40,7 +40,7 @@ const userPost = asyncMiddleware(async (req, res, next) => {
 });
 
 const userPut = asyncMiddleware(async (req, res, next) => {
-  const user = req.user;
+  const { user } = req;
 
   // If there are images
   // make sure they are in the correct format
@@ -56,7 +56,7 @@ const userPut = asyncMiddleware(async (req, res, next) => {
 });
 
 const userDelete = asyncMiddleware(async (req, res, next) => {
-  const user = req.user;
+  const { user } = req;
   const destroyedUser = await user.remove();
 
   if (!destroyedUser) {
@@ -67,7 +67,7 @@ const userDelete = asyncMiddleware(async (req, res, next) => {
 });
 
 const userMeGet = asyncMiddleware(async (req, res, next) => {
-  const user = req.user;
+  const { user } = req;
 
   res.json(dataResponse({ user }));
 });
@@ -79,7 +79,7 @@ const userRecipesGet = asyncMiddleware(async (req, res, next) => {
     'rating',
     'stars',
     'limit',
-    'offset'
+    'offset',
   ]);
 
   if (!query) {
@@ -90,7 +90,7 @@ const userRecipesGet = asyncMiddleware(async (req, res, next) => {
     model: User,
     path: 'recipes',
     id: req.params.id,
-    query
+    query,
   });
 });
 
@@ -112,7 +112,7 @@ const userReviewsGet = asyncMiddleware(async (req, res, next) => {
     'rating',
     'stars',
     'limit',
-    'offset'
+    'offset',
   ]);
 
   if (!query) {
@@ -123,17 +123,13 @@ const userReviewsGet = asyncMiddleware(async (req, res, next) => {
     model: User,
     path: 'reviews',
     id: req.params.id,
-    query
+    query,
   });
 });
 
 const userCollectionsGet = asyncMiddleware(async (req, res, next) => {
   // Make sure only permitted operations are sent to query
-  const query = validateQuery(req.query, [
-    'createdAt',
-    'limit',
-    'offset'
-  ]);
+  const query = validateQuery(req.query, ['createdAt', 'limit', 'offset']);
 
   if (!query) {
     errorResponse.invalidQuery();
@@ -143,17 +139,13 @@ const userCollectionsGet = asyncMiddleware(async (req, res, next) => {
     model: User,
     path: 'collections',
     id: req.params.id,
-    query
+    query,
   });
 });
 
 const userCollectionsGetAll = asyncMiddleware(async (req, res, next) => {
   // Make sure only permitted operations are sent to query
-  const query = validateQuery(req.query, [
-    'createdAt',
-    'limit',
-    'offset'
-  ]);
+  const query = validateQuery(req.query, ['createdAt', 'limit', 'offset']);
 
   if (!query) {
     errorResponse.invalidQuery();
@@ -165,7 +157,7 @@ const userCollectionsGetAll = asyncMiddleware(async (req, res, next) => {
     id: req.params.id,
     query,
     // Only allow public collections
-    filter: collection => collection.isPrivate === false
+    filter: collection => collection.isPrivate === false,
   });
 });
 
@@ -182,11 +174,7 @@ const userCollectionsPost = asyncMiddleware(async (req, res, next) => {
 
 const userImagesGet = asyncMiddleware(async (req, res, next) => {
   // Make sure only permitted operations are sent to query
-  const query = validateQuery(req.query, [
-    'createdAt',
-    'limit',
-    'offset'
-  ]);
+  const query = validateQuery(req.query, ['createdAt', 'limit', 'offset']);
 
   if (!query) {
     errorResponse.invalidQuery();
@@ -196,7 +184,7 @@ const userImagesGet = asyncMiddleware(async (req, res, next) => {
     model: User,
     path: 'images',
     id: req.params.id,
-    query
+    query,
   });
 });
 
@@ -224,5 +212,5 @@ export default {
   userCollectionsGetAll,
   userCollectionsPost,
   userImagesGet,
-  userImagesPost
+  userImagesPost,
 };

@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
-const Schema = mongoose.Schema;
 import bcrypt from 'bcrypt';
+
+const { Schema } = mongoose;
 
 const schema = new Schema(
   {
@@ -15,7 +16,7 @@ const schema = new Schema(
     email: {
       type: String,
       required: true,
-      select: false
+      select: false,
     },
     password: {
       type: String,
@@ -23,37 +24,47 @@ const schema = new Schema(
       minLength: 8,
       maxLength: 72,
       required: true,
-      select: false
+      select: false,
     },
     location: {
       type: String,
-      trim: true
+      trim: true,
     },
     snippet: String,
     profileImage: String,
-    images: [{
-      type: Schema.Types.ObjectId,
-      ref: 'Image'
-    }],
-    recipes: [{
-      type: Schema.Types.ObjectId,
-      ref: 'Recipe'
-    }],
-    collections: [{
-      type: Schema.Types.ObjectId,
-      ref: 'Collection'
-    }],
-    reviews: [{
-      type: Schema.Types.ObjectId,
-      ref: 'Review'
-    }],
-    notes: [{
-      type: Schema.Types.ObjectId,
-      ref: 'Note'
-    }]
+    images: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Image',
+      },
+    ],
+    recipes: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Recipe',
+      },
+    ],
+    collections: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Collection',
+      },
+    ],
+    reviews: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Review',
+      },
+    ],
+    notes: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Note',
+      },
+    ],
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 );
 
@@ -70,7 +81,7 @@ schema.methods = {
   hashPassword(plaintextPassword) {
     // Returns promise
     return bcrypt.hash(plaintextPassword, 12);
-  }
+  },
 };
 
 export default mongoose.model('User', schema);

@@ -1,7 +1,7 @@
+import isEmail from 'isemail';
 import { signToken } from './auth';
 import User from '../api/user/userModel';
 import smtpTransport from '../mail/mail';
-import isEmail from 'isemail';
 import { asyncMiddleware } from '../helpers/async';
 import { errorResponse } from '../helpers/error';
 import { dataResponse } from '../helpers/response';
@@ -37,8 +37,8 @@ const requestPasswordReset = asyncMiddleware(async (req, res, next) => {
     template: 'passwordReset',
     context: {
       name: 'Ian',
-      dog: 'Charlie'
-    }
+      dog: 'Charlie',
+    },
   };
 
   const sentMail = await smtpTransport.sendMail(mailOptions);
@@ -53,5 +53,5 @@ const requestPasswordReset = asyncMiddleware(async (req, res, next) => {
 
 export default {
   loginPost,
-  requestPasswordReset
+  requestPasswordReset,
 };

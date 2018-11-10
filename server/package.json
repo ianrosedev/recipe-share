@@ -19,20 +19,18 @@
   "dependencies": {
     "bcrypt": "^3.0.2",
     "boom": "^7.2.2",
-    "cloudinary": "^1.11.0",
+    "cloudinary": "^1.12.0",
+    "dotenv": "^6.1.0",
     "express": "^4.16.4",
     "express-jwt": "^5.3.1",
-    "googleapis": "^34.0.0",
+    "googleapis": "^35.0.0",
     "isemail": "^3.2.0",
     "jsonwebtoken": "^8.3.0",
     "lodash": "^4.17.11",
-    "mongoose": "^5.3.8",
+    "mongoose": "^5.3.11",
     "morgan": "^1.9.1",
     "multer": "^1.4.1",
     "nodemailer": "^4.6.8",
     "nodemailer-express-handlebars": "^3.0.0"
-  },
-  "devDependencies": {
-    "dotenv": "^6.1.0"
   }
 }

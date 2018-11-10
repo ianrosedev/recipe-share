@@ -1,5 +1,5 @@
 export default {
   db: {
-    url: 'mongodb://localhost/recipeShareTest'
-  }
+    url: 'mongodb://localhost/recipeShareTest',
+  },
 };

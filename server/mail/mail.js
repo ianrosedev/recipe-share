@@ -2,7 +2,7 @@ import nodemailer from 'nodemailer';
 import { google } from 'googleapis';
 import hbs from 'nodemailer-express-handlebars';
 
-const OAuth2 = google.auth.OAuth2;
+const { OAuth2 } = google.auth;
 const oauth2Client = new OAuth2(
   process.env.MAIL_CLIENT_ID,
   process.env.MAIL_CLIENT_SECRET,
@@ -10,10 +10,11 @@ const oauth2Client = new OAuth2(
 );
 
 oauth2Client.setCredentials({
-  refresh_token: process.env.MAIL_REFRESH_TOKEN
+  refresh_token: process.env.MAIL_REFRESH_TOKEN,
 });
 
-const accessToken = oauth2Client.refreshAccessToken()
+const accessToken = oauth2Client
+  .refreshAccessToken()
   .then(res => res.credentials.access_token)
   .catch(err => console.log(err));
 
@@ -25,15 +26,18 @@ const smtpTransport = nodemailer.createTransport({
     clientId: process.env.MAIL_CLIENT_ID,
     clientSecret: process.env.MAIL_CLIENT_SECRET,
     refreshToken: process.env.MAIL_REFRESH_TOKEN,
-    accessToken
-  }
+    accessToken,
+  },
 });
 
 // Use handlebars for email template
-smtpTransport.use('compile', hbs({
-  viewEngine: 'express-handlebars',
-  viewPath: __dirname + '/views',
-  extName: '.hbs'
-}));
+smtpTransport.use(
+  'compile',
+  hbs({
+    viewEngine: 'express-handlebars',
+    viewPath: `${__dirname}/views`,
+    extName: '.hbs',
+  })
+);
 
 export default smtpTransport;

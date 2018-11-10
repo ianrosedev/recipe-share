@@ -1,33 +1,36 @@
 import mongoose from 'mongoose';
-const Schema = mongoose.Schema;
+
+const { Schema } = mongoose;
 
 const schema = new Schema(
   {
     userId: {
       type: Schema.Types.ObjectId,
-      required: true
+      required: true,
     },
     recipeId: {
       type: Schema.Types.ObjectId,
-      required: true
+      required: true,
     },
     text: {
       type: String,
-      required: true
+      required: true,
     },
     rating: {
       type: Number,
       min: 1,
       max: 5,
-      required: true
+      required: true,
     },
-    images: [{
-      type: Schema.Types.ObjectId,
-      ref: 'Image'
-    }]
+    images: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Image',
+      },
+    ],
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 );
 

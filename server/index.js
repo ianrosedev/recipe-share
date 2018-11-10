@@ -1,10 +1,11 @@
 import express from 'express';
-const app = express();
 import connectToDB from './db';
 import appMiddleware from './middleware/appMiddleware';
 import errorMiddleware from './middleware/errorMiddleware';
 import authRouter from './auth/authRouter';
 import apiRouter from './api/apiRouter';
+
+const app = express();
 
 // Connect to DB
 connectToDB();

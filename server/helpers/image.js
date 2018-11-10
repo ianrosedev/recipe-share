@@ -1,16 +1,14 @@
 import mongoose from 'mongoose';
-const { ObjectId } = mongoose.Types;
-import cloudinary from '../config/cloudinary';
 import fs from 'fs';
 import { promisify } from 'util';
-const asyncUnlink = promisify(fs.unlink);
 import { uniq } from 'lodash';
+import cloudinary from '../config/cloudinary';
+
+const { ObjectId } = mongoose.Types;
+const asyncUnlink = promisify(fs.unlink);
 
 export const cloudinaryPost = async (imagePath, options) => {
-  const createdImage = await cloudinary.v2.uploader.upload(
-    imagePath,
-    options
-  );
+  const createdImage = await cloudinary.v2.uploader.upload(imagePath, options);
 
   //  Delete file after upload
   await asyncUnlink(imagePath);
@@ -18,7 +16,7 @@ export const cloudinaryPost = async (imagePath, options) => {
   return createdImage;
 };
 
-export const cloudinaryDelete = async (imageId) => {
+export const cloudinaryDelete = async imageId => {
   const destroyedImage = await cloudinary.v2.uploader.destroy(
     { imageId },
     { invalidate: true }
@@ -27,12 +25,14 @@ export const cloudinaryDelete = async (imageId) => {
   return destroyedImage;
 };
 
-export const formatImages = (images) => {
+export const formatImages = images => {
   if (typeof images === 'string') {
     return [ObjectId(images)];
-  } else if (Array.isArray(images)) {
-    return uniq(images).map(img => ObjectId(img));
-  } else {
-    return [];
   }
+
+  if (Array.isArray(images)) {
+    return uniq(images).map(img => ObjectId(img));
+  }
+
+  return [];
 };

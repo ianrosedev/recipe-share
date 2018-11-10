@@ -6,9 +6,7 @@ import { validateQuery, findAndSort } from '../../helpers/query';
 
 const tagGet = asyncMiddleware(async (req, res, next) => {
   const tagId = req.params.id;
-  const tag = await Tag
-    .findById(tagId)
-    .lean();
+  const tag = await Tag.findById(tagId).lean();
 
   if (!tag) {
     errorResponse.searchNotFound('tag');
@@ -19,11 +17,7 @@ const tagGet = asyncMiddleware(async (req, res, next) => {
 
 const tagGetAll = asyncMiddleware(async (req, res, next) => {
   // Make sure only permitted operations are sent to query
-  const query = validateQuery(req.query, [
-    'createdAt',
-    'limit',
-    'offset'
-  ]);
+  const query = validateQuery(req.query, ['createdAt', 'limit', 'offset']);
 
   if (!query) {
     errorResponse.invalidQuery();
@@ -32,7 +26,7 @@ const tagGetAll = asyncMiddleware(async (req, res, next) => {
   findAndSort(req, res, next, {
     model: Tag,
     as: 'tags',
-    query
+    query,
   });
 });
 
@@ -50,5 +44,5 @@ const tagPost = asyncMiddleware(async (req, res, next) => {
 export default {
   tagGet,
   tagGetAll,
-  tagPost
+  tagPost,
 };

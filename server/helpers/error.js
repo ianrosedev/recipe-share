@@ -15,5 +15,5 @@ export const errorResponse = {
   },
   serverError() {
     throw Boom.badImplementation('Internal Server Error');
-  }
+  },
 };
