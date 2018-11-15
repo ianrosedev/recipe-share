@@ -1,14 +1,14 @@
 import mongoose from 'mongoose';
-import appConfig from '../config';
+import config from '../config';
 
 mongoose.Promise = global.Promise;
 
-export default async (config = appConfig) => {
+export default async () => {
   try {
-    const connected = await mongoose.connect(config.db.url);
+    const connected = await mongoose.connect(config.db.host);
 
     if (connected === mongoose) {
-      console.log('🎉  connected to DB at:', appConfig.db.url);
+      console.log('🎉  connected to DB at:', config.db.host);
     }
   } catch (err) {
     console.log('ERROR:', err.message);

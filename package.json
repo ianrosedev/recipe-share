@@ -14,21 +14,24 @@
   },
   "main": "index.js",
   "scripts": {
-    "start-dev": "nodemon -r esm --inspect index.js",
-    "start": "node -r esm index.js"
+    "start": "node -r esm index.js",
+    "start-dev": "nodemon -r 'dotenv/config' -r esm --inspect index.js",
+    "test-server": "NODE_ENV=test mocha -r 'dotenv/config' -r esm --recursive server/test --watch"
   },
   "dependencies": {
     "esm": "^3.0.84"
   },
   "devDependencies": {
+    "dotenv": "^6.1.0",
     "eslint": "^5.9.0",
     "eslint-config-airbnb": "^17.1.0",
-    "eslint-config-prettier": "^3.1.0",
+    "eslint-config-prettier": "^3.3.0",
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-jsx-a11y": "^6.1.2",
     "eslint-plugin-prettier": "^3.0.0",
     "eslint-plugin-react": "^7.11.1",
+    "mocha": "^5.2.0",
     "nodemon": "^1.18.6",
-    "prettier": "^1.15.1"
+    "prettier": "^1.15.2"
   }
 }

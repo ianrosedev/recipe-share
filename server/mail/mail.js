@@ -1,16 +1,17 @@
 import nodemailer from 'nodemailer';
 import { google } from 'googleapis';
 import hbs from 'nodemailer-express-handlebars';
+import config from '../config';
 
 const { OAuth2 } = google.auth;
 const oauth2Client = new OAuth2(
-  process.env.MAIL_CLIENT_ID,
-  process.env.MAIL_CLIENT_SECRET,
+  config.mail.clientID,
+  config.mail.clientSecret,
   'https://developers.google.com/oauthplayground'
 );
 
 oauth2Client.setCredentials({
-  refresh_token: process.env.MAIL_REFRESH_TOKEN,
+  refresh_token: config.mail.refreshToken,
 });
 
 const accessToken = oauth2Client
@@ -23,9 +24,9 @@ const smtpTransport = nodemailer.createTransport({
   auth: {
     type: 'OAuth2',
     user: 'ianrosedev@gmail.com',
-    clientId: process.env.MAIL_CLIENT_ID,
-    clientSecret: process.env.MAIL_CLIENT_SECRET,
-    refreshToken: process.env.MAIL_REFRESH_TOKEN,
+    clientId: config.mail.clientID,
+    clientSecret: config.mail.clientSecret,
+    refreshToken: config.mail.refreshToken,
     accessToken,
   },
 });

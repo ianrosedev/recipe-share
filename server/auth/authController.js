@@ -16,17 +16,17 @@ const requestPasswordReset = asyncMiddleware(async (req, res, next) => {
   const userEmail = req.body.email.trim();
 
   if (!userEmail) {
-    errorResponse.customBadRequest('Email required!');
+    errorResponse.customBadRequest('Email required');
   }
 
   if (!isEmail.validate(userEmail)) {
-    errorResponse.customBadRequest('Bad email address!');
+    errorResponse.customBadRequest('Bad email address');
   }
 
   const user = await User.findOne({ email: userEmail }).lean();
 
   if (!user) {
-    errorResponse.customBadRequest('No user with that email!');
+    errorResponse.customBadRequest('No user with that email');
   }
 
   // WIP
@@ -48,7 +48,7 @@ const requestPasswordReset = asyncMiddleware(async (req, res, next) => {
     errorResponse.serverError();
   }
 
-  res.json(dataResponse({ message: `Email sent to ${userEmail}!` }));
+  res.json(dataResponse({ message: `Email sent to ${userEmail}` }));
 });
 
 export default {

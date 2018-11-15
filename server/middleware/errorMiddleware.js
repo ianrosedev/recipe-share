@@ -1,4 +1,5 @@
 import Boom from 'boom';
+import config from '../config';
 
 export default (err, req, res, next) => {
   // if (err.isServer) {
@@ -6,6 +7,10 @@ export default (err, req, res, next) => {
   //   // probably you don't want to log unauthorized access
   //   // or do you?
   // }
+
+  if (config.env !== 'production') {
+    console.log(err);
+  }
 
   // Bad MongoId
   if (err.name === 'CastError') {

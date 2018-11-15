@@ -1,15 +1,17 @@
 import jwt from 'jsonwebtoken';
 import expressJwt from 'express-jwt';
-import config from '../config';
 import User from '../api/user/userModel';
 import { asyncMiddleware } from '../helpers/async';
 import { errorResponse } from '../helpers/error';
+import config from '../config';
 
-export const signToken = (id, expireTime = config.expireTime) =>
-  jwt.sign({ _id: id }, config.secrets.jwt, { expiresIn: expireTime });
+export const signToken = id =>
+  jwt.sign({ _id: id }, config.jwt.secret, {
+    expiresIn: config.jwt.expireTime,
+  });
 
 export const checkToken = (req, res, next) => {
-  const check = expressJwt({ secret: config.secrets.jwt });
+  const check = expressJwt({ secret: config.jwt.secret });
   // Returns middleware
   check(req, res, next);
 };

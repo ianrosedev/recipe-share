@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import fs from 'fs';
 import { promisify } from 'util';
 import { uniq } from 'lodash';
-import cloudinary from '../config/cloudinary';
+import cloudinary from '../cloudinary';
 
 const { ObjectId } = mongoose.Types;
 const asyncUnlink = promisify(fs.unlink);
