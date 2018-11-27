@@ -4,11 +4,14 @@ import appMiddleware from './middleware/appMiddleware';
 import errorMiddleware from './middleware/errorMiddleware';
 import authRouter from './auth/authRouter';
 import apiRouter from './api/apiRouter';
+import config from './config';
 
 const app = express();
 
 // Connect to DB
-connectToDB();
+if (config.env !== 'test') {
+  connectToDB();
+}
 
 // Middleware setup
 appMiddleware(app);

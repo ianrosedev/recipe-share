@@ -1,7 +1,10 @@
 import mongoose from 'mongoose';
 import config from '../config';
 
+// Use native Promises
 mongoose.Promise = global.Promise;
+
+// Suppress warnings
 mongoose.set('useFindAndModify', true);
 mongoose.set('useCreateIndex', true);
 
@@ -9,6 +12,7 @@ export default async () => {
   try {
     const connected = await mongoose.connect(
       config.db.host,
+      // Suppress warnings
       { useNewUrlParser: true }
     );
 

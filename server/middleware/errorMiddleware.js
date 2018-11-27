@@ -8,8 +8,18 @@ export default (err, req, res, next) => {
   //   // or do you?
   // }
 
-  if (config.env !== 'production') {
+  if (config.env === 'development') {
     console.log(err);
+  }
+
+  // Unauthorized
+  if (err.name === 'UnauthorizedError') {
+    err = Boom.unauthorized();
+  }
+
+  // Duplicate
+  if (err.name === 'MongoError' && err.code === 11000) {
+    err = new Boom('Duplicate', { statusCode: 401 });
   }
 
   // Bad MongoId

@@ -7,7 +7,7 @@ export default app => {
   app.use(json());
 
   // Log HTTP requests
-  if (config.env !== 'production') {
+  if (config.env === 'development') {
     app.use(morgan('dev'));
   }
 };

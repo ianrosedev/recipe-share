@@ -1,7 +1,4 @@
 {
-  "db": {
-    "host": "mongodb://localhost:27017/recipeShareTest"
-  },
   "jwt": {
     "secret": "testSecret",
     "expireTime": "1m"
