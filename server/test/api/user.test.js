@@ -1,12 +1,13 @@
 import expect from 'expect';
 import request from 'supertest';
 import faker from 'faker';
-import { apiV1, setup, teardown } from '../testSetup';
+import { apiV1, setup, teardown, resetDB } from '../testSetup';
 import app from '../../index';
 
 describe('User', () => {
   before(setup);
   after(teardown);
+  afterEach(resetDB);
 
   describe('userPost', () => {
     it('creates a new user', done => {

@@ -25,15 +25,18 @@ export const setup = done => {
         }
       )
     )
-    .then(() => {
-      console.log('⚙️  connected to test DB');
-      done();
-    });
+    .then(done());
 };
 
 export const teardown = () => {
   mongoose.disconnect();
   mongoServer.stop();
+};
+
+export const resetDB = () => {
+  // Clean up models & schemas for mocha --watch
+  mongoose.models = {};
+  mongoose.modelSchemas = {};
 };
 
 export const apiV1 = '/api/v1/';
