@@ -12,10 +12,7 @@ import { formatImages } from '../../helpers/image';
 
 const userGet = asyncMiddleware(async (req, res, next) => {
   const userId = req.params.id;
-  const user = await User.findById(
-    userId,
-    'username location snippet profileImage'
-  );
+  const user = await User.findById(userId);
 
   if (!user) {
     errorResponse.searchNotFound('user');
@@ -34,6 +31,11 @@ const userPost = asyncMiddleware(async (req, res, next) => {
   const newUser = new User(req.body);
   newUser.password = await newUser.hashPassword(newUser.password);
   const createdUser = await newUser.save();
+
+  if (!createdUser) {
+    errorResponse.serverError();
+  }
+
   const token = await signToken(createdUser._id);
 
   res.status(201).json(dataResponse({ token }, 201));
