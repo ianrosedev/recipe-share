@@ -16,7 +16,7 @@
   "scripts": {
     "start": "node -r esm index.js",
     "start-dev": "NODE_ENV=development nodemon -r 'dotenv/config' -r esm --inspect index.js",
-    "test-server": "NODE_ENV=test mocha -r 'dotenv/config' -r esm -w --recursive server/test"
+    "test-server": "NODE_ENV=test mocha -r 'dotenv/config' -r esm -w -s 1000 --recursive server/test"
   },
   "dependencies": {
     "esm": "^3.0.84"
