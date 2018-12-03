@@ -17,7 +17,7 @@
   "dependencies": {
     "@meanie/mongoose-to-json": "^2.3.0",
     "bcrypt": "^3.0.2",
-    "boom": "^7.2.2",
+    "boom": "^7.3.0",
     "cloudinary": "^1.13.2",
     "convict": "^4.4.0",
     "express": "^4.16.4",
@@ -26,7 +26,7 @@
     "isemail": "^3.2.0",
     "jsonwebtoken": "^8.4.0",
     "lodash": "^4.17.11",
-    "mongoose": "^5.3.13",
+    "mongoose": "^5.3.14",
     "morgan": "^1.9.1",
     "multer": "^1.4.1",
     "nodemailer": "^4.7.0",
@@ -35,7 +35,7 @@
   "devDependencies": {
     "expect": "^23.6.0",
     "faker": "^4.1.0",
-    "mongodb-memory-server": "^2.7.3",
+    "mongodb-memory-server": "^2.7.4",
     "supertest": "^3.3.0"
   }
 }
