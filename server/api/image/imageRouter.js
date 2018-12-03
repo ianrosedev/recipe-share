@@ -5,12 +5,10 @@ import uploadImage from '../../middleware/multipartMiddleware';
 
 const router = Router();
 
-router
-  .route('/')
+router.route('/')
   .post(checkToken, verifyUser, uploadImage, controller.imagePost);
 
-router
-  .route('/:id')
+router.route('/:id')
   .get(controller.imageGet)
   .delete(checkToken, verifyUser, controller.imageDelete);
 

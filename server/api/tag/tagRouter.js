@@ -4,11 +4,11 @@ import { checkToken } from '../../auth/auth';
 
 const router = Router();
 
-router
-  .route('/')
+router.route('/')
   .get(controller.tagGetAll)
   .post(checkToken, controller.tagPost);
 
-router.route('/:id').get(controller.tagGet);
+router.route('/:id')
+  .get(controller.tagGet);
 
 export default router;
