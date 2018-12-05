@@ -252,6 +252,16 @@ export const findAndSort = async (
     // Set results to correct path
     results = results[path] || results;
 
+    // Change `_id`->`id` & delete `__v`
+    // @meanie/mongoose-to-json is not working here
+    // because an array is returned
+    results = results.map(result => {
+      result.id = result._id;
+      delete result._id;
+      delete result.__v;
+      return result;
+    });
+
     // Filter results if option is present
     if (filter) {
       results = results.filter(filter);

@@ -18,9 +18,9 @@ export default async () => {
     const connected = await mongoose.connect(config.db.host);
 
     if (connected === mongoose) {
-      console.log('🎉  connected to DB at:', config.db.host);
+      console.log(`🎉  connected to DB at: ${config.db.host}`);
     }
   } catch (err) {
-    console.log('ERROR:', err.message);
+    console.log(`❌  MongoDB ${err.message}`);
   }
 };

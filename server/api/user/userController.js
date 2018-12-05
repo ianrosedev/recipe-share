@@ -31,11 +31,6 @@ const userPost = asyncMiddleware(async (req, res, next) => {
   const newUser = new User(req.body);
   newUser.password = await newUser.hashPassword(newUser.password);
   const createdUser = await newUser.save();
-
-  if (!createdUser) {
-    errorResponse.serverError();
-  }
-
   const token = await signToken(createdUser._id);
 
   res.status(201).json(dataResponse({ token }, 201));
@@ -43,6 +38,7 @@ const userPost = asyncMiddleware(async (req, res, next) => {
 
 const userPut = asyncMiddleware(async (req, res, next) => {
   const { user } = req;
+  const userUpdate = req.body;
 
   // If there are images
   // make sure they are in the correct format
@@ -50,7 +46,6 @@ const userPut = asyncMiddleware(async (req, res, next) => {
     req.body.images = await formatImages(req.body.images);
   }
 
-  const userUpdate = req.body;
   const update = merge(user, userUpdate);
   const updatedUser = await user.save(update);
 
@@ -60,10 +55,6 @@ const userPut = asyncMiddleware(async (req, res, next) => {
 const userDelete = asyncMiddleware(async (req, res, next) => {
   const { user } = req;
   const destroyedUser = await user.remove();
-
-  if (!destroyedUser) {
-    errorResponse.serverError();
-  }
 
   res.json(dataResponse({ destroyed: destroyedUser.id }));
 });

@@ -27,6 +27,11 @@ export default (err, req, res, next) => {
     err = new Boom('Invalid ID', { statusCode: 400 });
   }
 
+  // Missing required fields
+  if (err.name === 'ValidationError') {
+    err = new Boom('Missing Required Fields', { statusCode: 400 });
+  }
+
   // All other errors get changed into Boom errors
   if (!Boom.isBoom(err)) {
     Boom.boomify(err);

@@ -18,7 +18,6 @@ const schema = new Schema(
     recipes: [
       {
         type: Schema.Types.ObjectId,
-        unique: true,
       },
     ],
     isPrivate: {

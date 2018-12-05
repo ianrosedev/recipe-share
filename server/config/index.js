@@ -84,6 +84,6 @@ const env = config.get('env');
 config.loadFile(`${__dirname}/${env}.json`);
 config.validate({ allowed: 'strict' });
 
-console.log('🌴  environment:', env);
+console.log(`🌴  environment: ${env}`);
 
 export default config.getProperties();
