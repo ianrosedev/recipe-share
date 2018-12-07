@@ -7,7 +7,8 @@ import expect from 'expect';
 import request from 'supertest';
 import faker from 'faker';
 import mongoose from 'mongoose';
-import { apiV1, setup, teardown, resetDB } from '../testSetup';
+import { apiV1, setup, teardown, resetDB } from '../testHelpers/testSetup';
+import { cloudinaryPostMock } from '../testHelpers/images/imageMocks';
 import app from '../../index';
 import User from '../../api/user/userModel';
 
@@ -365,6 +366,34 @@ describe('/users', function() {
             expect(Array.isArray(res.body.data.recipes)).toBeTruthy();
           });
       });
+
+      it('returns 400 for invalid ID type', function() {
+        const id = 'Spaceballs1234';
+
+        return request(app)
+          .get(`${apiV1}users/${id}/reviews`)
+          .set('Accept', 'application/json')
+          .expect('Content-Type', /json/)
+          .then(function(res) {
+            expect(res.status).toBe(400);
+            expect(res.body.statusCode).toBe(400);
+            expect(res.body.message).toBe('Invalid ID');
+          });
+      });
+
+      it('returns 400 if user not found', function() {
+        const id = '5b6b22cfd5507aaeafdb65a3';
+
+        return request(app)
+          .get(`${apiV1}users/${id}/reviews`)
+          .set('Accept', 'application/json')
+          .expect('Content-Type', /json/)
+          .then(function(res) {
+            expect(res.status).toBe(400);
+            expect(res.body.statusCode).toBe(400);
+            expect(res.body.message).toBe('Bad Request');
+          });
+      });
     });
 
     describe('POST', function() {
@@ -548,6 +577,34 @@ describe('/users', function() {
             expect(res.body.data.length).toBe(1);
             expect(res.body.data.groupLength).toBe(1);
             expect(Array.isArray(res.body.data.reviews)).toBeTruthy();
+          });
+      });
+
+      it('returns 400 for invalid ID type', function() {
+        const id = 'Spaceballs1234';
+
+        return request(app)
+          .get(`${apiV1}users/${id}/reviews`)
+          .set('Accept', 'application/json')
+          .expect('Content-Type', /json/)
+          .then(function(res) {
+            expect(res.status).toBe(400);
+            expect(res.body.statusCode).toBe(400);
+            expect(res.body.message).toBe('Invalid ID');
+          });
+      });
+
+      it('returns 400 if user not found', function() {
+        const id = '5b6b22cfd5507aaeafdb65a3';
+
+        return request(app)
+          .get(`${apiV1}users/${id}/reviews`)
+          .set('Accept', 'application/json')
+          .expect('Content-Type', /json/)
+          .then(function(res) {
+            expect(res.status).toBe(400);
+            expect(res.body.statusCode).toBe(400);
+            expect(res.body.message).toBe('Bad Request');
           });
       });
     });
@@ -1057,6 +1114,80 @@ describe('/users', function() {
             expect(res.body.data.groupLength).toBe(1);
             expect(Array.isArray(res.body.data.collections)).toBeTruthy();
             expect(res.body.data.collections[0].id).toBe(publicCollectionId);
+          });
+      });
+    });
+  });
+
+  describe('/:id/images', function() {
+    // Mock cloudinaryPost for testing
+    // without hitting the API
+    cloudinaryPostMock();
+
+    describe('GET', function() {});
+    describe('POST', function() {
+      it('needs jwt authorization', function() {
+        const user = {
+          username: faker.name.findName(),
+          email: faker.internet.email(),
+          password: faker.internet.password(),
+        };
+        const image = 'server/test/testHelpers/images/pinkPanther.jpg';
+
+        let createdUser;
+
+        return request(app)
+          .post(`${apiV1}users`)
+          .send(user)
+          .set('Accept', 'application/json')
+          .expect('Content-Type', /json/)
+          .then(async function(res) {
+            createdUser = await User.find({ username: user.username });
+
+            return request(app)
+              .post(`${apiV1}users/${createdUser[0]._id}/images`)
+              .attach('image', image)
+              .expect('Content-Type', /json/);
+          })
+          .then(function(res) {
+            expect(res.status).toBe(401);
+            expect(res.body.statusCode).toBe(401);
+            expect(res.body.message).toBe('Unauthorized');
+          });
+      });
+
+      it('adds an image and updates the user', function() {
+        const user = {
+          username: faker.name.findName(),
+          email: faker.internet.email(),
+          password: faker.internet.password(),
+        };
+        const image = 'server/test/testHelpers/images/pinkPanther.jpg';
+
+        let token;
+        let createdUser;
+
+        return request(app)
+          .post(`${apiV1}users`)
+          .send(user)
+          .set('Accept', 'application/json')
+          .expect('Content-Type', /json/)
+          .then(async function(res) {
+            token = res.body.data.token; // eslint-disable-line
+            createdUser = await User.find({ username: user.username });
+
+            return request(app)
+              .post(`${apiV1}users/${createdUser[0]._id}/images`)
+              .attach('image', image)
+              .set('Authorization', `Bearer ${token}`)
+              .expect('Content-Type', /json/);
+          })
+          .then(function(res) {
+            expect(res.status).toBe(200);
+            expect(res.body.statusCode).toBe(200);
+            expect(res.body.data.user.id).toBe(res.body.data.image.userId);
+            expect(Array.isArray(res.body.data.user.images)).toBeTruthy();
+            expect(res.body.data.user.images[0]).toBe(res.body.data.image.id);
           });
       });
     });

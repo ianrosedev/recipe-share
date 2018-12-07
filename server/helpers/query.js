@@ -81,7 +81,7 @@ const queryFind = async (model, options) => {
 
     return results;
   } catch (err) {
-    throw new Error(err);
+    throw err;
   }
 };
 
@@ -117,17 +117,13 @@ const queryFindAndPopulate = async (model, id, options = {}) => {
     // Get data from database
     const results = await model
       .findById(id)
-      .select(`-_id ${path}`)
+      .select(`${path}`)
       .populate(options)
       .lean();
 
-    if (!results) {
-      throw new Error('Internal Server Error');
-    }
-
     return results;
   } catch (err) {
-    throw new Error(err);
+    throw err;
   }
 };
 
@@ -152,7 +148,7 @@ const queryPaginate = (res, data, offset = 0, limit = 20) => {
 
     return data.slice(offset, limit);
   } catch (err) {
-    throw new Error(err);
+    throw err;
   }
 };
 

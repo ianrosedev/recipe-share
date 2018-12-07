@@ -16,13 +16,13 @@
   "scripts": {
     "start": "node -r esm index.js",
     "start-dev": "NODE_ENV=development nodemon -r 'dotenv/config' -r esm --inspect index.js",
-    "test-server": "NODE_ENV=test mocha -r 'dotenv/config' -r esm -w -s 1000 --recursive server/test"
+    "test-server": "NODE_ENV=test mocha -r 'dotenv/config' -r esm -w -s 1000 --recursive server/test || exit 0"
   },
   "dependencies": {
     "esm": "^3.0.84"
   },
   "devDependencies": {
-    "dotenv": "^6.1.0",
+    "dotenv": "^6.2.0",
     "eslint": "^5.9.0",
     "eslint-config-airbnb": "^17.1.0",
     "eslint-config-prettier": "^3.3.0",
