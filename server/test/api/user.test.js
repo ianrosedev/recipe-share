@@ -15,66 +15,72 @@ import User from '../../api/user/userModel';
 const { ObjectId } = mongoose.Types;
 
 describe('/users', function() {
+  let user;
+  let recipe;
+  let createNewUser;
+
   before(setup);
+  beforeEach(() => {
+    // Data is different for each test
+    user = {
+      username: faker.name.findName(),
+      email: faker.internet.email(),
+      password: faker.internet.password(),
+      location: faker.address.city(),
+      snippet: faker.lorem.sentence(),
+      profileImage: faker.image.avatar(),
+    };
+
+    recipe = {
+      name: faker.lorem.words(),
+      snippet: faker.lorem.sentence(),
+      ingredients: [faker.lorem.word(), faker.lorem.word(), faker.lorem.word()],
+      directions: [
+        faker.lorem.paragraph(),
+        faker.lorem.paragraph(),
+        faker.lorem.paragraph(),
+      ],
+    };
+
+    // Create new user
+    createNewUser = request(app)
+      .post(`${apiV1}users`)
+      .send(user)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/);
+  });
   after(teardown);
   afterEach(resetDB);
 
   describe('/', function() {
     describe('POST', function() {
       it('creates a new user', function() {
-        const user = {
-          username: faker.name.findName(),
-          email: faker.internet.email(),
-          password: faker.internet.password(),
-        };
-
-        return request(app)
-          .post(`${apiV1}users`)
-          .send(user)
-          .set('Accept', 'application/json')
-          .expect('Content-Type', /json/)
-          .then(function(res) {
-            expect(res.status).toBe(201);
-            expect(res.body.statusCode).toBe(201);
-            expect(res.body.data.token).toBeDefined();
-          });
+        return createNewUser.then(function(res) {
+          expect(res.status).toBe(201);
+          expect(res.body.statusCode).toBe(201);
+          expect(res.body.data.token).toBeDefined();
+        });
       });
 
       it('rejects a duplicate username', function() {
-        const user = {
-          username: faker.name.findName(),
-          email: faker.internet.email(),
-          password: faker.internet.password(),
-        };
-
-        return request(app)
-          .post(`${apiV1}users`)
-          .send(user)
-          .set('Accept', 'application/json')
-          .expect('Content-Type', /json/)
-          .then(
-            // Give a little time for the first user
-            // to be created before the second attempt
-            res =>
-              new Promise(resolve =>
-                setTimeout(
-                  () =>
-                    resolve(function(res) {
-                      return request(app)
-                        .post(`${apiV1}users`)
-                        .send(user)
-                        .set('Accept', 'application/json')
-                        .expect('Content-Type', /json/)
-                        .then(function(res) {
-                          expect(res.status).toBe(401);
-                          expect(res.body.statusCode).toBe(401);
-                          expect(res.body.message).toBe('Duplicate');
-                        });
-                    }),
-                  10
-                )
+        return createNewUser.then(
+          // Give a little time for the first user
+          // to be created before the second attempt
+          res =>
+            new Promise(resolve =>
+              setTimeout(
+                () =>
+                  resolve(function(res) {
+                    return createNewUser.then(function(res) {
+                      expect(res.status).toBe(401);
+                      expect(res.body.statusCode).toBe(401);
+                      expect(res.body.message).toBe('Duplicate');
+                    });
+                  }),
+                10
               )
-          );
+            )
+        );
       });
     });
 
@@ -97,21 +103,11 @@ describe('/users', function() {
       });
 
       it('updates a user', function() {
-        const user = {
-          username: faker.name.findName(),
-          email: faker.internet.email(),
-          password: faker.internet.password(),
-        };
-
         const userUpdate = {
           snippet: faker.lorem.sentence(),
         };
 
-        return request(app)
-          .post(`${apiV1}users`)
-          .send(user)
-          .set('Accept', 'application/json')
-          .expect('Content-Type', /json/)
+        return createNewUser
           .then(function(res) {
             return request(app)
               .put(`${apiV1}users`)
@@ -147,17 +143,7 @@ describe('/users', function() {
       });
 
       it('deletes a user', function() {
-        const user = {
-          username: faker.name.findName(),
-          email: faker.internet.email(),
-          password: faker.internet.password(),
-        };
-
-        return request(app)
-          .post(`${apiV1}users`)
-          .send(user)
-          .set('Accept', 'application/json')
-          .expect('Content-Type', /json/)
+        return createNewUser
           .then(function(res) {
             return request(app)
               .delete(`${apiV1}users`)
@@ -193,19 +179,9 @@ describe('/users', function() {
       });
 
       it('returns the current user', function() {
-        const user = {
-          username: faker.name.findName(),
-          email: faker.internet.email(),
-          password: faker.internet.password(),
-        };
-
         let createdUser;
 
-        return request(app)
-          .post(`${apiV1}users`)
-          .send(user)
-          .set('Accept', 'application/json')
-          .expect('Content-Type', /json/)
+        return createNewUser
           .then(async function(res) {
             createdUser = await User.find({ username: user.username });
 
@@ -232,22 +208,9 @@ describe('/users', function() {
   describe('/:id', function() {
     describe('GET', function() {
       it('returns a user by ID', function() {
-        const user = {
-          username: faker.name.findName(),
-          email: faker.internet.email(),
-          password: faker.internet.password(),
-          location: faker.address.city(),
-          snippet: faker.lorem.sentence(),
-          profileImage: faker.image.avatar(),
-        };
-
         let createdUser;
 
-        return request(app)
-          .post(`${apiV1}users`)
-          .send(user)
-          .set('Accept', 'application/json')
-          .expect('Content-Type', /json/)
+        return createNewUser
           .then(async function(res) {
             createdUser = await User.find({ username: user.username });
 
@@ -310,34 +273,9 @@ describe('/users', function() {
   describe('/:id/recipes', function() {
     describe('GET', function() {
       it('returns an array of recipes', function() {
-        const user = {
-          username: faker.name.findName(),
-          email: faker.internet.email(),
-          password: faker.internet.password(),
-        };
-
-        const recipe = {
-          name: faker.lorem.words(),
-          snippet: faker.lorem.sentence(),
-          ingredients: [
-            faker.lorem.word(),
-            faker.lorem.word(),
-            faker.lorem.word(),
-          ],
-          directions: [
-            faker.lorem.paragraph(),
-            faker.lorem.paragraph(),
-            faker.lorem.paragraph(),
-          ],
-        };
-
         let createdUser;
 
-        return request(app)
-          .post(`${apiV1}users`)
-          .send(user)
-          .set('Accept', 'application/json')
-          .expect('Content-Type', /json/)
+        return createNewUser
           .then(async function(res) {
             createdUser = await User.find({ username: user.username });
 
@@ -364,70 +302,16 @@ describe('/users', function() {
             expect(res.body.data.length).toBe(1);
             expect(res.body.data.groupLength).toBe(1);
             expect(Array.isArray(res.body.data.recipes)).toBeTruthy();
-          });
-      });
-
-      it('returns 400 for invalid ID type', function() {
-        const id = 'Spaceballs1234';
-
-        return request(app)
-          .get(`${apiV1}users/${id}/reviews`)
-          .set('Accept', 'application/json')
-          .expect('Content-Type', /json/)
-          .then(function(res) {
-            expect(res.status).toBe(400);
-            expect(res.body.statusCode).toBe(400);
-            expect(res.body.message).toBe('Invalid ID');
-          });
-      });
-
-      it('returns 400 if user not found', function() {
-        const id = '5b6b22cfd5507aaeafdb65a3';
-
-        return request(app)
-          .get(`${apiV1}users/${id}/reviews`)
-          .set('Accept', 'application/json')
-          .expect('Content-Type', /json/)
-          .then(function(res) {
-            expect(res.status).toBe(400);
-            expect(res.body.statusCode).toBe(400);
-            expect(res.body.message).toBe('Bad Request');
+            expect(res.body.data.recipes.length).toBe(1);
           });
       });
     });
 
     describe('POST', function() {
       it('needs jwt authorization', function() {
-        const user = {
-          username: faker.name.findName(),
-          email: faker.internet.email(),
-          password: faker.internet.password(),
-        };
-
-        const recipe = {
-          name: faker.lorem.words(),
-          snippet: faker.lorem.sentence(),
-          ingredients: [
-            faker.lorem.word(),
-            faker.lorem.word(),
-            faker.lorem.word(),
-          ],
-          directions: [
-            faker.lorem.paragraph(),
-            faker.lorem.paragraph(),
-            faker.lorem.paragraph(),
-          ],
-        };
-
-        let createdUser;
-
-        return request(app)
-          .post(`${apiV1}users`)
-          .send(user)
-          .set('Accept', 'application/json')
-          .expect('Content-Type', /json/)
+        return createNewUser
           .then(async function(res) {
-            createdUser = await User.find({ username: user.username });
+            const createdUser = await User.find({ username: user.username });
 
             return request(app)
               .post(`${apiV1}users/${createdUser[0]._id}/recipes`)
@@ -443,36 +327,9 @@ describe('/users', function() {
       });
 
       it('adds a recipe and updates the user', function() {
-        const user = {
-          username: faker.name.findName(),
-          email: faker.internet.email(),
-          password: faker.internet.password(),
-        };
-
-        const recipe = {
-          name: faker.lorem.words(),
-          snippet: faker.lorem.sentence(),
-          ingredients: [
-            faker.lorem.word(),
-            faker.lorem.word(),
-            faker.lorem.word(),
-          ],
-          directions: [
-            faker.lorem.paragraph(),
-            faker.lorem.paragraph(),
-            faker.lorem.paragraph(),
-          ],
-        };
-
-        let createdUser;
-
-        return request(app)
-          .post(`${apiV1}users`)
-          .send(user)
-          .set('Accept', 'application/json')
-          .expect('Content-Type', /json/)
+        return createNewUser
           .then(async function(res) {
-            createdUser = await User.find({ username: user.username });
+            const createdUser = await User.find({ username: user.username });
 
             return request(app)
               .post(`${apiV1}users/${createdUser[0]._id}/recipes`)
@@ -490,6 +347,7 @@ describe('/users', function() {
             expect(res.body.statusCode).toBe(200);
             expect(res.body.data.user.id).toBe(res.body.data.recipe.userId);
             expect(Array.isArray(res.body.data.user.recipes)).toBeTruthy();
+            expect(res.body.data.user.recipes.length).toBe(1);
             expect(res.body.data.user.recipes[0]).toBe(res.body.data.recipe.id);
           });
       });
@@ -499,44 +357,16 @@ describe('/users', function() {
   describe('/:id/reviews', function() {
     describe('GET', function() {
       it('returns an array of reviews', function() {
-        const user = {
-          username: faker.name.findName(),
-          email: faker.internet.email(),
-          password: faker.internet.password(),
-        };
-
-        const recipe = {
-          name: faker.lorem.words(),
-          snippet: faker.lorem.sentence(),
-          ingredients: [
-            faker.lorem.word(),
-            faker.lorem.word(),
-            faker.lorem.word(),
-          ],
-          directions: [
-            faker.lorem.paragraph(),
-            faker.lorem.paragraph(),
-            faker.lorem.paragraph(),
-          ],
-        };
-
         const review = {
           text: faker.lorem.paragraph(),
           rating: 3,
         };
-
         let token;
-        let createdUser;
-        let recipeId;
 
-        return request(app)
-          .post(`${apiV1}users`)
-          .send(user)
-          .set('Accept', 'application/json')
-          .expect('Content-Type', /json/)
+        return createNewUser
           .then(async function(res) {
             token = res.body.data.token; // eslint-disable-line
-            createdUser = await User.find({ username: user.username });
+            const createdUser = await User.find({ username: user.username });
 
             return request(app)
               .post(`${apiV1}users/${createdUser[0]._id}/recipes`)
@@ -550,7 +380,7 @@ describe('/users', function() {
               .expect('Content-Type', /json/);
           })
           .then(function(res) {
-            recipeId = res.body.data.recipe.id;
+            const recipeId = res.body.data.recipe.id;
 
             return request(app)
               .post(`${apiV1}/recipes/${recipeId}/reviews`)
@@ -577,34 +407,7 @@ describe('/users', function() {
             expect(res.body.data.length).toBe(1);
             expect(res.body.data.groupLength).toBe(1);
             expect(Array.isArray(res.body.data.reviews)).toBeTruthy();
-          });
-      });
-
-      it('returns 400 for invalid ID type', function() {
-        const id = 'Spaceballs1234';
-
-        return request(app)
-          .get(`${apiV1}users/${id}/reviews`)
-          .set('Accept', 'application/json')
-          .expect('Content-Type', /json/)
-          .then(function(res) {
-            expect(res.status).toBe(400);
-            expect(res.body.statusCode).toBe(400);
-            expect(res.body.message).toBe('Invalid ID');
-          });
-      });
-
-      it('returns 400 if user not found', function() {
-        const id = '5b6b22cfd5507aaeafdb65a3';
-
-        return request(app)
-          .get(`${apiV1}users/${id}/reviews`)
-          .set('Accept', 'application/json')
-          .expect('Content-Type', /json/)
-          .then(function(res) {
-            expect(res.status).toBe(400);
-            expect(res.body.statusCode).toBe(400);
-            expect(res.body.message).toBe('Bad Request');
+            expect(res.body.data.reviews.length).toBe(1);
           });
       });
     });
@@ -613,44 +416,17 @@ describe('/users', function() {
   describe('/:id/collections', function() {
     describe('GET', function() {
       it('needs jwt authorization', function() {
-        const user = {
-          username: faker.name.findName(),
-          email: faker.internet.email(),
-          password: faker.internet.password(),
-        };
-
-        const recipe = {
-          name: faker.lorem.words(),
-          snippet: faker.lorem.sentence(),
-          ingredients: [
-            faker.lorem.word(),
-            faker.lorem.word(),
-            faker.lorem.word(),
-          ],
-          directions: [
-            faker.lorem.paragraph(),
-            faker.lorem.paragraph(),
-            faker.lorem.paragraph(),
-          ],
-        };
-
         const collection = {
           name: faker.lorem.words(),
           isPrivate: true,
         };
-
         let token;
-        let createdUser;
         let userId;
 
-        return request(app)
-          .post(`${apiV1}users`)
-          .send(user)
-          .set('Accept', 'application/json')
-          .expect('Content-Type', /json/)
+        return createNewUser
           .then(async function(res) {
             token = res.body.data.token; // eslint-disable-line
-            createdUser = await User.find({ username: user.username });
+            const createdUser = await User.find({ username: user.username });
 
             return request(app)
               .post(`${apiV1}users/${createdUser[0]._id}/recipes`)
@@ -691,44 +467,17 @@ describe('/users', function() {
       });
 
       it('returns an array of collections', function() {
-        const user = {
-          username: faker.name.findName(),
-          email: faker.internet.email(),
-          password: faker.internet.password(),
-        };
-
-        const recipe = {
-          name: faker.lorem.words(),
-          snippet: faker.lorem.sentence(),
-          ingredients: [
-            faker.lorem.word(),
-            faker.lorem.word(),
-            faker.lorem.word(),
-          ],
-          directions: [
-            faker.lorem.paragraph(),
-            faker.lorem.paragraph(),
-            faker.lorem.paragraph(),
-          ],
-        };
-
         const collection = {
           name: faker.lorem.words(),
           isPrivate: true,
         };
-
         let token;
-        let createdUser;
         let userId;
 
-        return request(app)
-          .post(`${apiV1}users`)
-          .send(user)
-          .set('Accept', 'application/json')
-          .expect('Content-Type', /json/)
+        return createNewUser
           .then(async function(res) {
             token = res.body.data.token; // eslint-disable-line
-            createdUser = await User.find({ username: user.username });
+            const createdUser = await User.find({ username: user.username });
 
             return request(app)
               .post(`${apiV1}users/${createdUser[0]._id}/recipes`)
@@ -772,50 +521,22 @@ describe('/users', function() {
             expect(res.body.data.length).toBe(1);
             expect(res.body.data.groupLength).toBe(1);
             expect(Array.isArray(res.body.data.collections)).toBeTruthy();
+            expect(res.body.data.collections.length).toBe(1);
           });
       });
     });
 
     describe('POST', function() {
       it('needs jwt authorization', function() {
-        const user = {
-          username: faker.name.findName(),
-          email: faker.internet.email(),
-          password: faker.internet.password(),
-        };
-
-        const recipe = {
-          name: faker.lorem.words(),
-          snippet: faker.lorem.sentence(),
-          ingredients: [
-            faker.lorem.word(),
-            faker.lorem.word(),
-            faker.lorem.word(),
-          ],
-          directions: [
-            faker.lorem.paragraph(),
-            faker.lorem.paragraph(),
-            faker.lorem.paragraph(),
-          ],
-        };
-
         const collection = {
           name: faker.lorem.words(),
           isPrivate: true,
         };
 
-        let token;
-        let createdUser;
-        let userId;
-
-        return request(app)
-          .post(`${apiV1}users`)
-          .send(user)
-          .set('Accept', 'application/json')
-          .expect('Content-Type', /json/)
+        return createNewUser
           .then(async function(res) {
-            token = res.body.data.token; // eslint-disable-line
-            createdUser = await User.find({ username: user.username });
+            const token = res.body.data.token; // eslint-disable-line
+            const createdUser = await User.find({ username: user.username });
 
             return request(app)
               .post(`${apiV1}users/${createdUser[0]._id}/recipes`)
@@ -829,11 +550,12 @@ describe('/users', function() {
               .expect('Content-Type', /json/);
           })
           .then(function(res) {
-            userId = res.body.data.user.id;
+            const userId = res.body.data.user.id;
+            const recipeId = res.body.data.recipe.id;
 
             return request(app)
               .post(`${apiV1}/users/${userId}/collections`)
-              .send(collection)
+              .send(merge(collection, { recipes: [recipeId] }))
               .set('Accept', 'application/json')
               .expect('Content-Type', /json/);
           })
@@ -845,45 +567,17 @@ describe('/users', function() {
       });
 
       it('adds a recipe and updates the user', function() {
-        const user = {
-          username: faker.name.findName(),
-          email: faker.internet.email(),
-          password: faker.internet.password(),
-        };
-
-        const recipe = {
-          name: faker.lorem.words(),
-          snippet: faker.lorem.sentence(),
-          ingredients: [
-            faker.lorem.word(),
-            faker.lorem.word(),
-            faker.lorem.word(),
-          ],
-          directions: [
-            faker.lorem.paragraph(),
-            faker.lorem.paragraph(),
-            faker.lorem.paragraph(),
-          ],
-        };
-
         const collection = {
           name: faker.lorem.words(),
           isPrivate: true,
         };
-
         let token;
-        let createdUser;
-        let userId;
         let recipeId;
 
-        return request(app)
-          .post(`${apiV1}users`)
-          .send(user)
-          .set('Accept', 'application/json')
-          .expect('Content-Type', /json/)
+        return createNewUser
           .then(async function(res) {
             token = res.body.data.token; // eslint-disable-line
-            createdUser = await User.find({ username: user.username });
+            const createdUser = await User.find({ username: user.username });
 
             return request(app)
               .post(`${apiV1}users/${createdUser[0]._id}/recipes`)
@@ -897,7 +591,7 @@ describe('/users', function() {
               .expect('Content-Type', /json/);
           })
           .then(function(res) {
-            userId = res.body.data.user.id;
+            const userId = res.body.data.user.id;
             recipeId = res.body.data.recipe.id;
 
             return request(app)
@@ -927,44 +621,17 @@ describe('/users', function() {
   describe('/:id/collections/public', function() {
     describe('GET', function() {
       it('returns an array of collections', function() {
-        const user = {
-          username: faker.name.findName(),
-          email: faker.internet.email(),
-          password: faker.internet.password(),
-        };
-
-        const recipe = {
-          name: faker.lorem.words(),
-          snippet: faker.lorem.sentence(),
-          ingredients: [
-            faker.lorem.word(),
-            faker.lorem.word(),
-            faker.lorem.word(),
-          ],
-          directions: [
-            faker.lorem.paragraph(),
-            faker.lorem.paragraph(),
-            faker.lorem.paragraph(),
-          ],
-        };
-
         const collection = {
           name: faker.lorem.words(),
           isPrivate: false,
         };
-
         let token;
-        let createdUser;
         let userId;
 
-        return request(app)
-          .post(`${apiV1}users`)
-          .send(user)
-          .set('Accept', 'application/json')
-          .expect('Content-Type', /json/)
+        return createNewUser
           .then(async function(res) {
             token = res.body.data.token; // eslint-disable-line
-            createdUser = await User.find({ username: user.username });
+            const createdUser = await User.find({ username: user.username });
 
             return request(app)
               .post(`${apiV1}users/${createdUser[0]._id}/recipes`)
@@ -1008,54 +675,27 @@ describe('/users', function() {
             expect(res.body.data.length).toBe(1);
             expect(res.body.data.groupLength).toBe(1);
             expect(Array.isArray(res.body.data.collections)).toBeTruthy();
+            expect(res.body.data.collections.length).toBe(1);
           });
       });
 
       it('returns only public collections', function() {
-        const user = {
-          username: faker.name.findName(),
-          email: faker.internet.email(),
-          password: faker.internet.password(),
-        };
-
-        const recipe = {
-          name: faker.lorem.words(),
-          snippet: faker.lorem.sentence(),
-          ingredients: [
-            faker.lorem.word(),
-            faker.lorem.word(),
-            faker.lorem.word(),
-          ],
-          directions: [
-            faker.lorem.paragraph(),
-            faker.lorem.paragraph(),
-            faker.lorem.paragraph(),
-          ],
-        };
-
         const publicCollection = {
           name: faker.lorem.words(),
           isPrivate: false,
         };
-
         const privateCollection = {
           name: faker.lorem.words(),
           isPrivate: true,
         };
-
         let token;
-        let createdUser;
         let userId;
         let publicCollectionId;
 
-        return request(app)
-          .post(`${apiV1}users`)
-          .send(user)
-          .set('Accept', 'application/json')
-          .expect('Content-Type', /json/)
+        return createNewUser
           .then(async function(res) {
             token = res.body.data.token; // eslint-disable-line
-            createdUser = await User.find({ username: user.username });
+            const createdUser = await User.find({ username: user.username });
 
             return request(app)
               .post(`${apiV1}users/${createdUser[0]._id}/recipes`)
@@ -1113,6 +753,7 @@ describe('/users', function() {
             expect(res.body.data.length).toBe(1);
             expect(res.body.data.groupLength).toBe(1);
             expect(Array.isArray(res.body.data.collections)).toBeTruthy();
+            expect(res.body.data.collections.length).toBe(1);
             expect(res.body.data.collections[0].id).toBe(publicCollectionId);
           });
       });
@@ -1124,25 +765,70 @@ describe('/users', function() {
     // without hitting the API
     cloudinaryPostMock();
 
-    describe('GET', function() {});
+    describe('GET', function() {
+      it('needs jwt authorization', function() {
+        return createNewUser
+          .then(async function(res) {
+            const createdUser = await User.find({ username: user.username });
+
+            return request(app)
+              .get(`${apiV1}users/${createdUser[0]._id}/images`)
+              .set('Accept', 'application/json')
+              .expect('Content-Type', /json/);
+          })
+          .then(function(res) {
+            expect(res.status).toBe(401);
+            expect(res.body.statusCode).toBe(401);
+            expect(res.body.message).toBe('Unauthorized');
+          });
+      });
+
+      it('returns an array of images', function() {
+        const image = 'server/test/testHelpers/images/pinkPanther.jpg';
+        let token;
+
+        return createNewUser
+          .then(async function(res) {
+            token = res.body.data.token; // eslint-disable-line
+            const createdUser = await User.find({ username: user.username });
+
+            return request(app)
+              .post(`${apiV1}users/${createdUser[0]._id}/images`)
+              .attach('image', image)
+              .set('Authorization', `Bearer ${token}`)
+              .expect('Content-Type', /json/);
+          })
+          .then(function(res) {
+            const userId = res.body.data.user.id;
+
+            return request(app)
+              .get(`${apiV1}users/${userId}/images`)
+              .set(
+                'Authorization',
+                `Bearer ${token}`,
+                'Accept',
+                'application/json'
+              )
+              .expect('Content-Type', /json/);
+          })
+          .then(function(res) {
+            expect(res.status).toBe(200);
+            expect(res.body.statusCode).toBe(200);
+            expect(res.body.data.length).toBe(1);
+            expect(res.body.data.groupLength).toBe(1);
+            expect(Array.isArray(res.body.data.images)).toBeTruthy();
+            expect(res.body.data.images.length).toBe(1);
+          });
+      });
+    });
+
     describe('POST', function() {
       it('needs jwt authorization', function() {
-        const user = {
-          username: faker.name.findName(),
-          email: faker.internet.email(),
-          password: faker.internet.password(),
-        };
         const image = 'server/test/testHelpers/images/pinkPanther.jpg';
 
-        let createdUser;
-
-        return request(app)
-          .post(`${apiV1}users`)
-          .send(user)
-          .set('Accept', 'application/json')
-          .expect('Content-Type', /json/)
+        return createNewUser
           .then(async function(res) {
-            createdUser = await User.find({ username: user.username });
+            const createdUser = await User.find({ username: user.username });
 
             return request(app)
               .post(`${apiV1}users/${createdUser[0]._id}/images`)
@@ -1157,24 +843,12 @@ describe('/users', function() {
       });
 
       it('adds an image and updates the user', function() {
-        const user = {
-          username: faker.name.findName(),
-          email: faker.internet.email(),
-          password: faker.internet.password(),
-        };
         const image = 'server/test/testHelpers/images/pinkPanther.jpg';
 
-        let token;
-        let createdUser;
-
-        return request(app)
-          .post(`${apiV1}users`)
-          .send(user)
-          .set('Accept', 'application/json')
-          .expect('Content-Type', /json/)
+        return createNewUser
           .then(async function(res) {
-            token = res.body.data.token; // eslint-disable-line
-            createdUser = await User.find({ username: user.username });
+            const token = res.body.data.token; // eslint-disable-line
+            const createdUser = await User.find({ username: user.username });
 
             return request(app)
               .post(`${apiV1}users/${createdUser[0]._id}/images`)
@@ -1187,6 +861,7 @@ describe('/users', function() {
             expect(res.body.statusCode).toBe(200);
             expect(res.body.data.user.id).toBe(res.body.data.image.userId);
             expect(Array.isArray(res.body.data.user.images)).toBeTruthy();
+            expect(res.body.data.user.images.length).toBe(1);
             expect(res.body.data.user.images[0]).toBe(res.body.data.image.id);
           });
       });
