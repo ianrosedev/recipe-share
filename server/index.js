@@ -1,4 +1,5 @@
 import express from 'express';
+import helmet from 'helmet';
 import config from './config';
 import connectToDB from './db';
 import appMiddleware from './middleware/appMiddleware';
@@ -13,6 +14,9 @@ const app = express();
 if (config.env !== 'test') {
   connectToDB();
 }
+
+// Security
+app.use(helmet());
 
 // Middleware setup
 appMiddleware(app);
