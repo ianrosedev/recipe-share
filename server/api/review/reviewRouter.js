@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import controller from './reviewController';
-import { checkToken, verifyUser } from '../../auth/auth';
+import { checkToken, getUser } from '../../auth/auth';
 
 const router = Router();
 
@@ -9,7 +9,7 @@ router.route('/')
 
 router.route('/:id')
   .get(controller.reviewGet)
-  .put(checkToken, verifyUser, controller.reviewPut)
-  .delete(checkToken, verifyUser, controller.reviewDelete);
+  .put(checkToken, getUser, controller.reviewPut)
+  .delete(checkToken, getUser, controller.reviewDelete);
 
 export default router;

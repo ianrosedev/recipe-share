@@ -16,7 +16,7 @@ export const checkToken = (req, res, next) => {
   check(req, res, next);
 };
 
-export const verifyUser = asyncMiddleware(async (req, res, next) => {
+export const getUser = asyncMiddleware(async (req, res, next) => {
   const user = await User.findById(req.user._id);
 
   if (!user) {
