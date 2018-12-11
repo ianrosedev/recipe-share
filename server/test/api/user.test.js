@@ -302,7 +302,7 @@ describe('/users', function() {
             expect(res.body.data.length).toBe(1);
             expect(res.body.data.groupLength).toBe(1);
             expect(Array.isArray(res.body.data.recipes)).toBeTruthy();
-            expect(res.body.data.recipes.length).toBe(1);
+            expect(res.body.data.recipes).toHaveLength(1);
           });
       });
     });
@@ -347,7 +347,7 @@ describe('/users', function() {
             expect(res.body.statusCode).toBe(200);
             expect(res.body.data.user.id).toBe(res.body.data.recipe.userId);
             expect(Array.isArray(res.body.data.user.recipes)).toBeTruthy();
-            expect(res.body.data.user.recipes.length).toBe(1);
+            expect(res.body.data.user.recipes).toHaveLength(1);
             expect(res.body.data.user.recipes[0]).toBe(res.body.data.recipe.id);
           });
       });
@@ -407,7 +407,7 @@ describe('/users', function() {
             expect(res.body.data.length).toBe(1);
             expect(res.body.data.groupLength).toBe(1);
             expect(Array.isArray(res.body.data.reviews)).toBeTruthy();
-            expect(res.body.data.reviews.length).toBe(1);
+            expect(res.body.data.reviews).toHaveLength(1);
           });
       });
     });
@@ -521,7 +521,7 @@ describe('/users', function() {
             expect(res.body.data.length).toBe(1);
             expect(res.body.data.groupLength).toBe(1);
             expect(Array.isArray(res.body.data.collections)).toBeTruthy();
-            expect(res.body.data.collections.length).toBe(1);
+            expect(res.body.data.collections).toHaveLength(1);
           });
       });
     });
@@ -675,7 +675,7 @@ describe('/users', function() {
             expect(res.body.data.length).toBe(1);
             expect(res.body.data.groupLength).toBe(1);
             expect(Array.isArray(res.body.data.collections)).toBeTruthy();
-            expect(res.body.data.collections.length).toBe(1);
+            expect(res.body.data.collections).toHaveLength(1);
           });
       });
 
@@ -753,7 +753,7 @@ describe('/users', function() {
             expect(res.body.data.length).toBe(1);
             expect(res.body.data.groupLength).toBe(1);
             expect(Array.isArray(res.body.data.collections)).toBeTruthy();
-            expect(res.body.data.collections.length).toBe(1);
+            expect(res.body.data.collections).toHaveLength(1);
             expect(res.body.data.collections[0].id).toBe(publicCollectionId);
           });
       });
@@ -817,7 +817,7 @@ describe('/users', function() {
             expect(res.body.data.length).toBe(1);
             expect(res.body.data.groupLength).toBe(1);
             expect(Array.isArray(res.body.data.images)).toBeTruthy();
-            expect(res.body.data.images.length).toBe(1);
+            expect(res.body.data.images).toHaveLength(1);
           });
       });
     });
@@ -861,7 +861,7 @@ describe('/users', function() {
             expect(res.body.statusCode).toBe(200);
             expect(res.body.data.user.id).toBe(res.body.data.image.userId);
             expect(Array.isArray(res.body.data.user.images)).toBeTruthy();
-            expect(res.body.data.user.images.length).toBe(1);
+            expect(res.body.data.user.images).toHaveLength(1);
             expect(res.body.data.user.images[0]).toBe(res.body.data.image.id);
           });
       });

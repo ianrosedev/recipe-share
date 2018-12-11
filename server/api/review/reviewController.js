@@ -103,7 +103,7 @@ const reviewDelete = asyncMiddleware(async (req, res, next) => {
     dataResponse({
       user: updatedUser,
       recipe: updatedRecipe,
-      review: destroyedReview._id,
+      review: { id: destroyedReview._id },
     })
   );
 });

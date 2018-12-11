@@ -71,7 +71,7 @@ describe('/tags', function() {
             expect(res.body.data.length).toBe(1);
             expect(res.body.data.groupLength).toBe(1);
             expect(Array.isArray(res.body.data.tags)).toBeTruthy();
-            expect(res.body.data.tags.length).toBe(1);
+            expect(res.body.data.tags).toHaveLength(1);
           });
       });
     });
