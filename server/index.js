@@ -1,5 +1,6 @@
 import express from 'express';
 import helmet from 'helmet';
+import compression from 'compression';
 import config from './config';
 import connectToDB from './db';
 import appMiddleware from './middleware/appMiddleware';
@@ -17,6 +18,9 @@ if (config.env !== 'test') {
 
 // Security
 app.use(helmet());
+
+// Compress responses
+app.use(compression());
 
 // Middleware setup
 appMiddleware(app);
