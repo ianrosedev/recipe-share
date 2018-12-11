@@ -3,26 +3,19 @@ import MongoMemoryServer from 'mongodb-memory-server'; // eslint-disable-line
 
 let mongoServer;
 
-export const setup = done => {
+export const setup = async () => {
   mongoServer = new MongoMemoryServer();
-  mongoServer
-    .getConnectionString()
-    .then(mongoUri =>
-      mongoose.connect(
-        mongoUri,
-        err => {
-          if (err) {
-            done(err);
-          }
-        }
-      )
-    )
-    .then(done());
+  const mongoUri = await mongoServer.getConnectionString();
+
+  await mongoose.connect(
+    mongoUri,
+    err => err && console.log(err)
+  );
 };
 
-export const teardown = () => {
-  mongoose.disconnect();
-  mongoServer.stop();
+export const teardown = async () => {
+  await mongoose.disconnect();
+  await mongoServer.stop();
 };
 
 export const resetDB = () => {
