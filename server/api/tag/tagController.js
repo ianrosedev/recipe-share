@@ -6,7 +6,7 @@ import { validateQuery, findAndSort } from '../../helpers/query';
 
 const tagGet = asyncMiddleware(async (req, res, next) => {
   const tagId = req.params.id;
-  const tag = await Tag.findById(tagId).lean();
+  const tag = await Tag.findById(tagId);
 
   if (!tag) {
     errorResponse.searchNotFound('tag');
@@ -33,10 +33,6 @@ const tagGetAll = asyncMiddleware(async (req, res, next) => {
 const tagPost = asyncMiddleware(async (req, res, next) => {
   const newTag = new Tag(req.body);
   const createdTag = await newTag.save();
-
-  if (!createdTag) {
-    errorResponse.serverError();
-  }
 
   res.json(dataResponse({ tag: createdTag }));
 });

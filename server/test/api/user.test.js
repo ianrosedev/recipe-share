@@ -1,6 +1,6 @@
 /* eslint-disable prefer-arrow-callback, no-shadow */
-// Always use standard function declaration for mocha
-// Allow use of same paramater name nested
+// prefer-arrow-callback: Always use standard function declaration for mocha
+// no-shadow: Allow use of same paramater name nested
 
 import { merge } from 'lodash';
 import expect from 'expect';
@@ -16,8 +16,8 @@ const { ObjectId } = mongoose.Types;
 
 describe('/users', function() {
   let user;
-  let recipe;
   let createNewUser;
+  let recipe;
 
   before(setup);
   beforeEach(() => {
@@ -44,7 +44,7 @@ describe('/users', function() {
 
     // Create new user
     createNewUser = request(app)
-      .post(`${apiV1}users`)
+      .post(`${apiV1}/users`)
       .send(user)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/);
@@ -91,7 +91,7 @@ describe('/users', function() {
         };
 
         return request(app)
-          .put(`${apiV1}users`)
+          .put(`${apiV1}/users`)
           .send(userUpdate)
           .set('Accept', 'application/json')
           .expect('Content-Type', /json/)
@@ -110,7 +110,7 @@ describe('/users', function() {
         return createNewUser
           .then(function(res) {
             return request(app)
-              .put(`${apiV1}users`)
+              .put(`${apiV1}/users`)
               .send(userUpdate)
               .set(
                 'Authorization',
@@ -132,7 +132,7 @@ describe('/users', function() {
     describe('DELETE', function() {
       it('needs jwt authorization', function() {
         return request(app)
-          .delete(`${apiV1}users`)
+          .delete(`${apiV1}/users`)
           .set('Accept', 'application/json')
           .expect('Content-Type', /json/)
           .then(function(res) {
@@ -146,7 +146,7 @@ describe('/users', function() {
         return createNewUser
           .then(function(res) {
             return request(app)
-              .delete(`${apiV1}users`)
+              .delete(`${apiV1}/users`)
               .set(
                 'Authorization',
                 `Bearer ${res.body.data.token}`,
@@ -168,7 +168,7 @@ describe('/users', function() {
     describe('GET', function() {
       it('needs jwt authorization', function() {
         return request(app)
-          .get(`${apiV1}users/me`)
+          .get(`${apiV1}/users/me`)
           .set('Accept', 'application/json')
           .expect('Content-Type', /json/)
           .then(function(res) {
@@ -186,7 +186,7 @@ describe('/users', function() {
             createdUser = await User.find({ username: user.username });
 
             return request(app)
-              .get(`${apiV1}users/me`)
+              .get(`${apiV1}/users/me`)
               .set(
                 'Authorization',
                 `Bearer ${res.body.data.token}`,
@@ -215,7 +215,7 @@ describe('/users', function() {
             createdUser = await User.find({ username: user.username });
 
             return request(app)
-              .get(`${apiV1}users/${createdUser[0]._id}`)
+              .get(`${apiV1}/users/${createdUser[0]._id}`)
               .set('Accept', 'application/json')
               .expect('Content-Type', /json/);
           })
@@ -244,7 +244,7 @@ describe('/users', function() {
         const id = 'Spaceballs1234';
 
         return request(app)
-          .get(`${apiV1}users/${id}`)
+          .get(`${apiV1}/users/${id}`)
           .set('Accept', 'application/json')
           .expect('Content-Type', /json/)
           .then(function(res) {
@@ -258,7 +258,7 @@ describe('/users', function() {
         const id = '5b6b22cfd5507aaeafdb65a3';
 
         return request(app)
-          .get(`${apiV1}users/${id}`)
+          .get(`${apiV1}/users/${id}`)
           .set('Accept', 'application/json')
           .expect('Content-Type', /json/)
           .then(function(res) {
@@ -280,7 +280,7 @@ describe('/users', function() {
             createdUser = await User.find({ username: user.username });
 
             return request(app)
-              .post(`${apiV1}users/${createdUser[0]._id}/recipes`)
+              .post(`${apiV1}/users/${createdUser[0]._id}/recipes`)
               .send(recipe)
               .set(
                 'Authorization',
@@ -292,7 +292,7 @@ describe('/users', function() {
           })
           .then(function(res) {
             return request(app)
-              .get(`${apiV1}users/${createdUser[0]._id}/recipes`)
+              .get(`${apiV1}/users/${createdUser[0]._id}/recipes`)
               .set('Accept', 'application/json')
               .expect('Content-Type', /json/);
           })
@@ -314,7 +314,7 @@ describe('/users', function() {
             const createdUser = await User.find({ username: user.username });
 
             return request(app)
-              .post(`${apiV1}users/${createdUser[0]._id}/recipes`)
+              .post(`${apiV1}/users/${createdUser[0]._id}/recipes`)
               .send(recipe)
               .set('Accept', 'application/json')
               .expect('Content-Type', /json/);
@@ -332,7 +332,7 @@ describe('/users', function() {
             const createdUser = await User.find({ username: user.username });
 
             return request(app)
-              .post(`${apiV1}users/${createdUser[0]._id}/recipes`)
+              .post(`${apiV1}/users/${createdUser[0]._id}/recipes`)
               .send(recipe)
               .set(
                 'Authorization',
@@ -369,7 +369,7 @@ describe('/users', function() {
             const createdUser = await User.find({ username: user.username });
 
             return request(app)
-              .post(`${apiV1}users/${createdUser[0]._id}/recipes`)
+              .post(`${apiV1}/users/${createdUser[0]._id}/recipes`)
               .send(recipe)
               .set(
                 'Authorization',
@@ -429,7 +429,7 @@ describe('/users', function() {
             const createdUser = await User.find({ username: user.username });
 
             return request(app)
-              .post(`${apiV1}users/${createdUser[0]._id}/recipes`)
+              .post(`${apiV1}/users/${createdUser[0]._id}/recipes`)
               .send(recipe)
               .set(
                 'Authorization',
@@ -480,7 +480,7 @@ describe('/users', function() {
             const createdUser = await User.find({ username: user.username });
 
             return request(app)
-              .post(`${apiV1}users/${createdUser[0]._id}/recipes`)
+              .post(`${apiV1}/users/${createdUser[0]._id}/recipes`)
               .send(recipe)
               .set(
                 'Authorization',
@@ -539,7 +539,7 @@ describe('/users', function() {
             const createdUser = await User.find({ username: user.username });
 
             return request(app)
-              .post(`${apiV1}users/${createdUser[0]._id}/recipes`)
+              .post(`${apiV1}/users/${createdUser[0]._id}/recipes`)
               .send(recipe)
               .set(
                 'Authorization',
@@ -580,7 +580,7 @@ describe('/users', function() {
             const createdUser = await User.find({ username: user.username });
 
             return request(app)
-              .post(`${apiV1}users/${createdUser[0]._id}/recipes`)
+              .post(`${apiV1}/users/${createdUser[0]._id}/recipes`)
               .send(recipe)
               .set(
                 'Authorization',
@@ -634,7 +634,7 @@ describe('/users', function() {
             const createdUser = await User.find({ username: user.username });
 
             return request(app)
-              .post(`${apiV1}users/${createdUser[0]._id}/recipes`)
+              .post(`${apiV1}/users/${createdUser[0]._id}/recipes`)
               .send(recipe)
               .set(
                 'Authorization',
@@ -698,7 +698,7 @@ describe('/users', function() {
             const createdUser = await User.find({ username: user.username });
 
             return request(app)
-              .post(`${apiV1}users/${createdUser[0]._id}/recipes`)
+              .post(`${apiV1}/users/${createdUser[0]._id}/recipes`)
               .send(recipe)
               .set(
                 'Authorization',
@@ -772,7 +772,7 @@ describe('/users', function() {
             const createdUser = await User.find({ username: user.username });
 
             return request(app)
-              .get(`${apiV1}users/${createdUser[0]._id}/images`)
+              .get(`${apiV1}/users/${createdUser[0]._id}/images`)
               .set('Accept', 'application/json')
               .expect('Content-Type', /json/);
           })
@@ -793,7 +793,7 @@ describe('/users', function() {
             const createdUser = await User.find({ username: user.username });
 
             return request(app)
-              .post(`${apiV1}users/${createdUser[0]._id}/images`)
+              .post(`${apiV1}/users/${createdUser[0]._id}/images`)
               .attach('image', image)
               .set('Authorization', `Bearer ${token}`)
               .expect('Content-Type', /json/);
@@ -802,7 +802,7 @@ describe('/users', function() {
             const userId = res.body.data.user.id;
 
             return request(app)
-              .get(`${apiV1}users/${userId}/images`)
+              .get(`${apiV1}/users/${userId}/images`)
               .set(
                 'Authorization',
                 `Bearer ${token}`,
@@ -831,7 +831,7 @@ describe('/users', function() {
             const createdUser = await User.find({ username: user.username });
 
             return request(app)
-              .post(`${apiV1}users/${createdUser[0]._id}/images`)
+              .post(`${apiV1}/users/${createdUser[0]._id}/images`)
               .attach('image', image)
               .expect('Content-Type', /json/);
           })
@@ -851,7 +851,7 @@ describe('/users', function() {
             const createdUser = await User.find({ username: user.username });
 
             return request(app)
-              .post(`${apiV1}users/${createdUser[0]._id}/images`)
+              .post(`${apiV1}/users/${createdUser[0]._id}/images`)
               .attach('image', image)
               .set('Authorization', `Bearer ${token}`)
               .expect('Content-Type', /json/);

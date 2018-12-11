@@ -24,4 +24,4 @@ export const resetDB = () => {
   mongoose.modelSchemas = {};
 };
 
-export const apiV1 = '/api/v1/';
+export const apiV1 = '/api/v1';

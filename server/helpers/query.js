@@ -74,10 +74,7 @@ const queryFind = async (model, options) => {
 
     // Get data from database
     // Handle error from database?
-    const results = await model
-      .find(match)
-      .sort(sort)
-      .lean();
+    const results = await model.find(match).sort(sort);
 
     return results;
   } catch (err) {
@@ -118,8 +115,7 @@ const queryFindAndPopulate = async (model, id, options = {}) => {
     const results = await model
       .findById(id)
       .select(`${path}`)
-      .populate(options)
-      .lean();
+      .populate(options);
 
     return results;
   } catch (err) {
@@ -247,16 +243,6 @@ export const findAndSort = async (
 
     // Set results to correct path
     results = results[path] || results;
-
-    // Change `_id`->`id` & delete `__v`
-    // @meanie/mongoose-to-json is not working here
-    // because an array is returned
-    results = results.map(result => {
-      result.id = result._id;
-      delete result._id;
-      delete result.__v;
-      return result;
-    });
 
     // Filter results if option is present
     if (filter) {

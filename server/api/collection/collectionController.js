@@ -11,7 +11,7 @@ const { ObjectId } = mongoose.Types;
 
 const collectionGet = asyncMiddleware(async (req, res, next) => {
   const collectionId = req.params.id;
-  const collection = await Collection.findById(collectionId).lean();
+  const collection = await Collection.findById(collectionId);
 
   if (collection.isPrivate) {
     errorResponse.unauthorized();
