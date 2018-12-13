@@ -1,6 +1,7 @@
-/* eslint-disable prefer-arrow-callback, no-shadow */
+/* eslint-disable prefer-arrow-callback, no-shadow, prefer-destructuring */
 // prefer-arrow-callback: Always use standard function declaration for mocha
 // no-shadow: Allow use of same paramater name nested
+// prefer-destructuring: Assign to variable after getting data
 
 import expect from 'expect';
 import request from 'supertest';
@@ -60,7 +61,7 @@ describe('/reviews', function() {
 
         return createNewUser
           .then(async function(res) {
-            token = res.body.data.token; // eslint-disable-line
+            token = res.body.data.token;
             const createdUser = await User.find({ username: user.username });
 
             return request(app)
@@ -114,7 +115,7 @@ describe('/reviews', function() {
 
         return createNewUser
           .then(async function(res) {
-            token = res.body.data.token; // eslint-disable-line
+            token = res.body.data.token;
             const createdUser = await User.find({ username: user.username });
 
             return request(app)
@@ -168,7 +169,7 @@ describe('/reviews', function() {
 
         return createNewUser
           .then(async function(res) {
-            token = res.body.data.token; // eslint-disable-line
+            token = res.body.data.token;
             const createdUser = await User.find({ username: user.username });
 
             return request(app)
@@ -217,7 +218,7 @@ describe('/reviews', function() {
 
         return createNewUser
           .then(async function(res) {
-            token = res.body.data.token; // eslint-disable-line
+            token = res.body.data.token;
             const createdUser = await User.find({ username: user.username });
 
             return request(app)
@@ -274,7 +275,7 @@ describe('/reviews', function() {
 
         return createNewUser
           .then(async function(res) {
-            token = res.body.data.token; // eslint-disable-line
+            token = res.body.data.token;
             const createdUser = await User.find({ username: user.username });
 
             return request(app)
@@ -323,7 +324,7 @@ describe('/reviews', function() {
 
         return createNewUser
           .then(async function(res) {
-            token = res.body.data.token; // eslint-disable-line
+            token = res.body.data.token;
             const createdUser = await User.find({ username: user.username });
 
             return request(app)

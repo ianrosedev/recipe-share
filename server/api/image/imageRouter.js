@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import controller from './imageController';
 import { checkToken, getUser } from '../../auth/auth';
-import uploadImage from '../../middleware/multipartMiddleware';
+import { uploadImage } from '../../middleware/multipartMiddleware';
 
 const router = Router();
 

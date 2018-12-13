@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import MongoMemoryServer from 'mongodb-memory-server'; // eslint-disable-line
+import MongoMemoryServer from 'mongodb-memory-server';
 
 let mongoServer;
 
@@ -19,7 +19,7 @@ export const teardown = async () => {
 };
 
 export const resetDB = () => {
-  // Clean up models & schemas for mocha --watch
+  // Clean up models & schemas
   mongoose.models = {};
   mongoose.modelSchemas = {};
 };

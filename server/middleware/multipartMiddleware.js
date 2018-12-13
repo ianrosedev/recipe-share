@@ -1,7 +1,9 @@
 import multer from 'multer';
 import path from 'path';
+import Boom from 'boom';
 
-export default multer({
+// Adds file to request object -> req.file
+export const uploadImage = multer({
   dest: 'tmp/',
   // Make sure only allowed file types get through
   fileFilter(req, file, cb) {
@@ -12,9 +14,11 @@ export default multer({
     );
 
     if (mimetype && extname) {
+      // Success
       return cb(null, true);
     }
 
-    cb(new Error('Bad file type!'));
+    // Error
+    cb(Boom.badRequest('Bad File Type'));
   },
 }).single('image');

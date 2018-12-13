@@ -1,6 +1,7 @@
-/* eslint-disable prefer-arrow-callback, no-shadow */
+/* eslint-disable prefer-arrow-callback, no-shadow, prefer-destructuring */
 // prefer-arrow-callback: Always use standard function declaration for mocha
 // no-shadow: Allow use of same paramater name nested
+// prefer-destructuring: Assign to variable after getting data
 
 import { merge } from 'lodash';
 import expect from 'expect';
@@ -8,7 +9,10 @@ import request from 'supertest';
 import faker from 'faker';
 import mongoose from 'mongoose';
 import { apiV1, setup, teardown, resetDB } from '../testHelpers/testSetup';
-import { cloudinaryPostMock } from '../testHelpers/images/imageMocks';
+import {
+  cloudinaryPostMock,
+  cloudinaryTempFileCleanup,
+} from '../testHelpers/images/imageHelpers';
 import app from '../../index';
 import User from '../../api/user/userModel';
 
@@ -365,7 +369,7 @@ describe('/users', function() {
 
         return createNewUser
           .then(async function(res) {
-            token = res.body.data.token; // eslint-disable-line
+            token = res.body.data.token;
             const createdUser = await User.find({ username: user.username });
 
             return request(app)
@@ -425,7 +429,7 @@ describe('/users', function() {
 
         return createNewUser
           .then(async function(res) {
-            token = res.body.data.token; // eslint-disable-line
+            token = res.body.data.token;
             const createdUser = await User.find({ username: user.username });
 
             return request(app)
@@ -476,7 +480,7 @@ describe('/users', function() {
 
         return createNewUser
           .then(async function(res) {
-            token = res.body.data.token; // eslint-disable-line
+            token = res.body.data.token;
             const createdUser = await User.find({ username: user.username });
 
             return request(app)
@@ -535,7 +539,7 @@ describe('/users', function() {
 
         return createNewUser
           .then(async function(res) {
-            const token = res.body.data.token; // eslint-disable-line
+            const token = res.body.data.token;
             const createdUser = await User.find({ username: user.username });
 
             return request(app)
@@ -576,7 +580,7 @@ describe('/users', function() {
 
         return createNewUser
           .then(async function(res) {
-            token = res.body.data.token; // eslint-disable-line
+            token = res.body.data.token;
             const createdUser = await User.find({ username: user.username });
 
             return request(app)
@@ -630,7 +634,7 @@ describe('/users', function() {
 
         return createNewUser
           .then(async function(res) {
-            token = res.body.data.token; // eslint-disable-line
+            token = res.body.data.token;
             const createdUser = await User.find({ username: user.username });
 
             return request(app)
@@ -694,7 +698,7 @@ describe('/users', function() {
 
         return createNewUser
           .then(async function(res) {
-            token = res.body.data.token; // eslint-disable-line
+            token = res.body.data.token;
             const createdUser = await User.find({ username: user.username });
 
             return request(app)
@@ -761,9 +765,10 @@ describe('/users', function() {
   });
 
   describe('/:id/images', function() {
-    // Mock cloudinaryPost for testing
-    // without hitting the API
-    cloudinaryPostMock();
+    // Mock cloudinaryPost for testing without hitting the API
+    before(cloudinaryPostMock);
+    // Delete temporary image files from server
+    after(cloudinaryTempFileCleanup);
 
     describe('GET', function() {
       it('needs jwt authorization', function() {
@@ -784,12 +789,12 @@ describe('/users', function() {
       });
 
       it('returns an array of images', function() {
-        const image = 'server/test/testHelpers/images/pinkPanther.jpg';
+        const image = 'server/test/testHelpers/images/images/pinkPanther.jpg';
         let token;
 
         return createNewUser
           .then(async function(res) {
-            token = res.body.data.token; // eslint-disable-line
+            token = res.body.data.token;
             const createdUser = await User.find({ username: user.username });
 
             return request(app)
@@ -824,7 +829,7 @@ describe('/users', function() {
 
     describe('POST', function() {
       it('needs jwt authorization', function() {
-        const image = 'server/test/testHelpers/images/pinkPanther.jpg';
+        const image = 'server/test/testHelpers/images/images/pinkPanther.jpg';
 
         return createNewUser
           .then(async function(res) {
@@ -843,11 +848,11 @@ describe('/users', function() {
       });
 
       it('adds an image and updates the user', function() {
-        const image = 'server/test/testHelpers/images/pinkPanther.jpg';
+        const image = 'server/test/testHelpers/images/images/pinkPanther.jpg';
 
         return createNewUser
           .then(async function(res) {
-            const token = res.body.data.token; // eslint-disable-line
+            const token = res.body.data.token;
             const createdUser = await User.find({ username: user.username });
 
             return request(app)
@@ -863,6 +868,28 @@ describe('/users', function() {
             expect(Array.isArray(res.body.data.user.images)).toBeTruthy();
             expect(res.body.data.user.images).toHaveLength(1);
             expect(res.body.data.user.images[0]).toBe(res.body.data.image.id);
+          });
+      });
+
+      it('rejects unauthorized file types', function() {
+        // .gif
+        const image = 'server/test/testHelpers/images/images/evilBaby.gif';
+
+        return createNewUser
+          .then(async function(res) {
+            const token = res.body.data.token;
+            const createdUser = await User.find({ username: user.username });
+
+            return request(app)
+              .post(`${apiV1}/users/${createdUser[0]._id}/images`)
+              .attach('image', image)
+              .set('Authorization', `Bearer ${token}`)
+              .expect('Content-Type', /json/);
+          })
+          .then(function(res) {
+            expect(res.status).toBe(400);
+            expect(res.body.statusCode).toBe(400);
+            expect(res.body.message).toBe('Bad File Type');
           });
       });
     });

@@ -1,6 +1,7 @@
-/* eslint-disable prefer-arrow-callback, no-shadow */
+/* eslint-disable prefer-arrow-callback, no-shadow, prefer-destructuring */
 // prefer-arrow-callback: Always use standard function declaration for mocha
 // no-shadow: Allow use of same paramater name nested
+// prefer-destructuring: Assign to variable after getting data
 
 import expect from 'expect';
 import request from 'supertest';
@@ -46,7 +47,7 @@ describe('/tags', function() {
 
         return createNewUser
           .then(function(res) {
-            token = res.body.data.token; // eslint-disable-line
+            token = res.body.data.token;
 
             return request(app)
               .post(`${apiV1}/tags`)
@@ -93,7 +94,7 @@ describe('/tags', function() {
       it('adds a tag', function() {
         return createNewUser
           .then(function(res) {
-            const token = res.body.data.token; // eslint-disable-line
+            const token = res.body.data.token;
 
             return request(app)
               .post(`${apiV1}/tags`)
@@ -119,7 +120,7 @@ describe('/tags', function() {
     it('returns a tag by ID', function() {
       return createNewUser
         .then(function(res) {
-          const token = res.body.data.token; // eslint-disable-line
+          const token = res.body.data.token;
 
           return request(app)
             .post(`${apiV1}/tags`)

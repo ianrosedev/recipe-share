@@ -1,5 +1,10 @@
 import sinon from 'sinon';
+import fs from 'fs';
+import util from 'util';
 import * as imageHelpers from '../../../helpers/image';
+
+const readdir = util.promisify(fs.readdir);
+const unlink = util.promisify(fs.unlink);
 
 export const cloudinaryPostMock = () =>
   sinon.stub(imageHelpers, 'cloudinaryPost').returns({
@@ -21,3 +26,17 @@ export const cloudinaryPostMock = () =>
       'https://res.cloudinary.com/recipe-share/image/upload/super/mario.jpg',
     original_filename: 'SuperMetroid',
   });
+
+export const cloudinaryTempFileCleanup = async () => {
+  try {
+    const directory = './tmp';
+    const files = await readdir(directory);
+    const unlinkPromises = files.map(filename =>
+      unlink(`${directory}/${filename}`)
+    );
+
+    return await Promise.all(unlinkPromises);
+  } catch (err) {
+    console.log(err);
+  }
+};
