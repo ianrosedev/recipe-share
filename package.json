@@ -16,7 +16,14 @@
   "scripts": {
     "start": "node -r esm index.js",
     "start-dev": "NODE_ENV=development nodemon -r 'dotenv/config' -r esm --inspect index.js",
-    "test-server": "NODE_ENV=test mocha -r 'dotenv/config' -r esm -w -s 1000 --recursive server/test || exit 0"
+    "test-server": "NODE_ENV=test mocha -r 'dotenv/config' -r esm -w -s 1000 --recursive --exit server/test || exit 0",
+    "test-server-git": "NODE_ENV=test mocha -r 'dotenv/config' -r esm -s 1000 --recursive --exit server/test"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run test-server-git",
+      "pre-push": "npm run test-server-git"
+    }
   },
   "dependencies": {
     "esm": "^3.0.84"
@@ -30,6 +37,7 @@
     "eslint-plugin-jsx-a11y": "^6.1.2",
     "eslint-plugin-prettier": "^3.0.0",
     "eslint-plugin-react": "^7.11.1",
+    "husky": "^1.2.1",
     "mocha": "^5.2.0",
     "nodemon": "^1.18.7",
     "prettier": "^1.15.3"
