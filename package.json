@@ -14,6 +14,41 @@
   },
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node -r esm index.js",
+    "start-dev": "NODE_ENV=development nodemon -r 'dotenv/config' -r esm --inspect index.js",
+    "test-server": "NODE_ENV=test mocha -r 'dotenv/config' -r esm -w -s 1000 --recursive server/test || exit 0",
+    "test-server-git": "NODE_ENV=test mocha -r 'dotenv/config' -r esm -s 1000 --recursive --exit server/test",
+    "format": "prettier --write \"./**/*.{js, json, html, css, scss, md}\""
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js, json, html, css, scss, md}": [
+      "prettier --write",
+      "eslint --fix",
+      "npm run test-server-git",
+      "git add"
+    ]
+  },
+  "dependencies": {
+    "esm": "^3.0.84"
+  },
+  "devDependencies": {
+    "dotenv": "^6.2.0",
+    "eslint": "^5.10.0",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-config-prettier": "^3.3.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-jsx-a11y": "^6.1.2",
+    "eslint-plugin-prettier": "^3.0.0",
+    "eslint-plugin-react": "^7.11.1",
+    "husky": "^1.2.1",
+    "lint-staged": "^8.1.0",
+    "mocha": "^5.2.0",
+    "nodemon": "^1.18.9",
+    "prettier": "^1.15.3"
   }
 }

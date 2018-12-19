@@ -1,0 +1,6 @@
+{
+  "jwt": {
+    "secret": "devSecret",
+    "expireTime": "10d"
+  }
+}
