@@ -1,0 +1,44 @@
+{
+  "name": "recipe-share-client",
+  "version": "0.2.0",
+  "description": "Client for recipe-share",
+  "author": "Ian Rose",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ianrosedev/recipe-share.git"
+  },
+  "homepage": "https://github.com/ianrosedev/recipe-share",
+  "bugs": {
+    "url": "https://github.com/ianrosedev/recipe-share/issues"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ],
+  "proxy": "http://localhost:3001",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test"
+  },
+  "dependencies": {
+    "react": "^16.7.0",
+    "react-dom": "^16.7.0",
+    "react-scripts": "2.1.1"
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.10.0",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-config-prettier": "^3.3.0",
+    "eslint-plugin-babel": "^5.3.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-jsx-a11y": "^6.1.2",
+    "eslint-plugin-prettier": "^3.0.0",
+    "eslint-plugin-react": "^7.11.1",
+    "prettier": "^1.15.3"
+  }
+}
