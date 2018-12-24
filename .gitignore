@@ -6,7 +6,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # Dependencies
-/node_modules
+node_modules/
 
 # Testing
 /coverage
