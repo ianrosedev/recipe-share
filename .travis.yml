@@ -1,0 +1,9 @@
+language: node_js
+node_js:
+  - 'stable'
+env:
+  - NODE_ENV=TEST
+install:
+  - npm run install-all
+script:
+  - npm run test-ci

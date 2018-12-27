@@ -15,13 +15,18 @@
   "main": "index.js",
   "scripts": {
     "format": "prettier --write \"./**/*.{js, json, html, css, scss, md}\"",
+    "install-all": "npm i && (cd server && npm i) && (cd client && npm i)",
     "start": "node -r esm index.js",
     "start-dev": "(concurrently -n DB,SERVER,CLIENT -c magenta,blue,cyan -k \"npm:start-dev-db\" \"npm:start-dev-server\" \"npm:start-dev-client\") && echo \"👍  all done!\"",
     "start-dev-client": "npm start --prefix client",
     "start-dev-db": "mongod &> /dev/null",
     "start-dev-server": "NODE_ENV=development nodemon -r 'dotenv/config' -r esm --inspect --ignore \"client\" index.js || exit 0",
+    "test": "concurrently -n SERVER,CLIENT -c blue,cyan -k \"npm run test-server\" \"npm run test-client\"",
+    "test-ci": "npm run test-server-ci && npm run test-client-ci",
+    "test-client": "npm test --prefix client",
+    "test-client-ci": "CI=true SKIP_PREFLIGHT_CHECK=true npm test --prefix client",
     "test-server": "NODE_ENV=test mocha -r 'dotenv/config' -r esm -w -s 1000 --recursive server/test || exit 0",
-    "test-server-git": "NODE_ENV=test mocha -r 'dotenv/config' -r esm -s 1000 --recursive --exit server/test"
+    "test-server-ci": "NODE_ENV=test mocha -r 'dotenv/config' -r esm -t 20000 -s 1000 --recursive --exit server/test"
   },
   "husky": {
     "hooks": {
@@ -36,7 +41,7 @@
         "git add"
       ],
       "server/**/*.{js, json, md}": [
-        "npm run test-server-git",
+        "npm run test-server-ci",
         "git add"
       ],
       "client/**/*.{js, json, html, css, scss, md}": [
@@ -52,7 +57,7 @@
     "babel-eslint": "^10.0.1",
     "concurrently": "^4.1.0",
     "dotenv": "^6.2.0",
-    "eslint": "^5.11.0",
+    "eslint": "^5.11.1",
     "eslint-config-airbnb": "^17.1.0",
     "eslint-config-prettier": "^3.3.0",
     "eslint-plugin-babel": "^5.3.0",
