@@ -1,0 +1,16 @@
+language: node_js
+node_js:
+  - 'stable'
+env:
+  - NODE_ENV=TEST
+branches:
+  only:
+    - master
+    - development
+    - /^v\d+\.\d+\.\d+(-(alpha|beta).*)?$/ # SemVer
+install:
+  - npm run install-all
+script:
+  - npm run format
+  - npm run lint
+  - npm run test-ci
