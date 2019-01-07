@@ -16,6 +16,7 @@
   "scripts": {
     "format": "prettier --write \"./**/*.{js, json, html, css, scss, md}\"",
     "install-all": "npm i && (cd server && npm i) && (cd client && npm i)",
+    "lint": "eslint --fix --ignore-path .gitignore .",
     "start": "node -r esm index.js",
     "start-dev": "(concurrently -n DB,SERVER,CLIENT -c magenta,blue,cyan -k \"npm:start-dev-db\" \"npm:start-dev-server\" \"npm:start-dev-client\") && echo \"👍  all done!\"",
     "start-dev-client": "npm start --prefix client",
