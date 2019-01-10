@@ -27,6 +27,10 @@ export const cloudinaryPostMock = () =>
     original_filename: 'SuperMetroid',
   });
 
+export const cloudinaryPostMockCleanup = async () => {
+  await imageHelpers.cloudinaryPost.restore();
+};
+
 export const cloudinaryTempFileCleanup = async () => {
   try {
     const directory = './tmp';
@@ -37,6 +41,11 @@ export const cloudinaryTempFileCleanup = async () => {
 
     return await Promise.all(unlinkPromises);
   } catch (err) {
-    console.log(err);
+    throw err;
   }
+};
+
+export const cloudinaryCleanup = async () => {
+  await cloudinaryPostMockCleanup();
+  await cloudinaryTempFileCleanup();
 };

@@ -9,11 +9,11 @@ import faker from 'faker';
 import { apiV1, setup, teardown, resetDB } from '../testHelpers/testSetup';
 import {
   cloudinaryPostMock,
-  cloudinaryTempFileCleanup,
+  cloudinaryCleanup,
 } from '../testHelpers/images/imageHelpers';
 import app from '../../index';
 
-describe.only('/recipes', function() {
+describe('/recipes', function() {
   let user;
   let recipe;
   let createNewUser;
@@ -685,8 +685,9 @@ describe.only('/recipes', function() {
   describe('/:id/images', function() {
     // Mock cloudinaryPost for testing without hitting the API
     before(cloudinaryPostMock);
+    // Clean up mock &
     // Delete temporary image files from server
-    after(cloudinaryTempFileCleanup);
+    after(cloudinaryCleanup);
 
     let image = 'server/test/testHelpers/images/images/pinkPanther.jpg';
 
