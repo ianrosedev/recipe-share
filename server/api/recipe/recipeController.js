@@ -50,6 +50,17 @@ const recipeGetAll = asyncMiddleware(async (req, res, next) => {
 const recipePost = asyncMiddleware(async (req, res, next) => {
   const userId = req.user._id;
 
+  // Model not correctly checking for required fields in arrays
+  // Need to manually check
+  if (
+    !req.body.ingredients ||
+    req.body.ingredients.length === 0 ||
+    !req.body.directions ||
+    req.body.directions.length === 0
+  ) {
+    errorResponse.customBadRequest('Invalid Value For Required Field');
+  }
+
   // If there are images
   // make sure they are in the correct format
   if (req.body.images) {
@@ -129,6 +140,7 @@ const recipeReviewsGet = asyncMiddleware(async (req, res, next) => {
 const recipeReviewsPost = asyncMiddleware(async (req, res, next) => {
   const userId = req.user._id;
   const recipeId = req.params.id;
+
   const userReview = {
     userId,
     recipeId,
