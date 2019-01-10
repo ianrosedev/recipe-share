@@ -1,3 +1,8 @@
 parsers:
   javascript:
     enable_partials: yes
+comment:
+  layout: 'diff'
+  behavior: 'spammy'
+  require_base: no
+  require_head: yes
