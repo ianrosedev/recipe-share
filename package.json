@@ -14,6 +14,9 @@
   },
   "main": "index.js",
   "scripts": {
+    "coverage-client": "npm run coverage --prefix client",
+    "coverage-report": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
+    "coverage-server": "nyc npm run test-server-ci",
     "format": "prettier --write \"./**/*.{js, json, html, css, scss, md}\"",
     "install-all": "npm i && (cd server && npm i) && (cd client && npm i)",
     "lint": "eslint --fix --ignore-path .gitignore .",
@@ -56,6 +59,7 @@
   },
   "devDependencies": {
     "babel-eslint": "^10.0.1",
+    "codecov": "^3.1.0",
     "concurrently": "^4.1.0",
     "dotenv": "^6.2.0",
     "eslint": "^5.11.1",
@@ -70,6 +74,7 @@
     "lint-staged": "^8.1.0",
     "mocha": "^5.2.0",
     "nodemon": "^1.18.9",
+    "nyc": "^13.1.0",
     "prettier": "^1.15.3"
   }
 }

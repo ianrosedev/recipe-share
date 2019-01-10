@@ -7,10 +7,13 @@ branches:
   only:
     - master
     - development
-    - /^v\d+\.\d+\.\d+(-(alpha|beta).*)?$/ # SemVer
+    - /^v\d+\.\d+\.\d+(-(alpha|beta).*)?$/ # Releases
 install:
   - npm run install-all
 script:
   - npm run format
   - npm run lint
   - npm run test-ci
+after_success:
+  - npm run coverage-server
+  - npm run coverage-report
