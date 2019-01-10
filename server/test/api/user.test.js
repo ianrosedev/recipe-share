@@ -800,7 +800,12 @@ describe('/users', function() {
             return request(app)
               .post(`${apiV1}/users/${createdUser[0]._id}/images`)
               .attach('image', image)
-              .set('Authorization', `Bearer ${token}`)
+              .set(
+                'Authorization',
+                `Bearer ${token}`,
+                'Accept',
+                'application/json'
+              )
               .expect('Content-Type', /json/);
           })
           .then(function(res) {
@@ -858,7 +863,12 @@ describe('/users', function() {
             return request(app)
               .post(`${apiV1}/users/${createdUser[0]._id}/images`)
               .attach('image', image)
-              .set('Authorization', `Bearer ${token}`)
+              .set(
+                'Authorization',
+                `Bearer ${token}`,
+                'Accept',
+                'application/json'
+              )
               .expect('Content-Type', /json/);
           })
           .then(function(res) {
@@ -883,7 +893,12 @@ describe('/users', function() {
             return request(app)
               .post(`${apiV1}/users/${createdUser[0]._id}/images`)
               .attach('image', image)
-              .set('Authorization', `Bearer ${token}`)
+              .set(
+                'Authorization',
+                `Bearer ${token}`,
+                'Accept',
+                'application/json'
+              )
               .expect('Content-Type', /json/);
           })
           .then(function(res) {
