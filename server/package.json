@@ -1,6 +1,6 @@
 {
   "name": "recipe-share-server",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Server for recipe-share",
   "author": "Ian Rose",
   "license": "ISC",

@@ -1,6 +1,6 @@
 {
   "name": "recipe-share",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Find and post recipes with others",
   "author": "Ian Rose",
   "license": "ISC",
@@ -14,6 +14,10 @@
   },
   "main": "index.js",
   "scripts": {
+    "coverage-client": "CI=true SKIP_PREFLIGHT_CHECK=true npm run coverage --prefix client",
+    "coverage-report-client": "npm run coveage-client && codecov",
+    "coverage-report-server": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
+    "coverage-server": "nyc npm run test-server-ci",
     "format": "prettier --write \"./**/*.{js, json, html, css, scss, md}\"",
     "install-all": "npm i && (cd server && npm i) && (cd client && npm i)",
     "lint": "eslint --fix --ignore-path .gitignore .",
@@ -23,7 +27,7 @@
     "start-dev-db": "mongod &> /dev/null",
     "start-dev-server": "NODE_ENV=development nodemon -r 'dotenv/config' -r esm --inspect --ignore \"client\" index.js || exit 0",
     "test": "concurrently -n SERVER,CLIENT -c blue,cyan -k \"npm run test-server\" \"npm run test-client\"",
-    "test-ci": "npm run test-server-ci && npm run test-client-ci",
+    "test-ci": "concurrently \"npm run coverage-server\" \"npm run coverage-client\"",
     "test-client": "npm test --prefix client",
     "test-client-ci": "CI=true SKIP_PREFLIGHT_CHECK=true npm test --prefix client",
     "test-server": "NODE_ENV=test mocha -r 'dotenv/config' -r esm -w -s 1000 --recursive server/test || exit 0",
@@ -56,6 +60,7 @@
   },
   "devDependencies": {
     "babel-eslint": "^10.0.1",
+    "codecov": "^3.1.0",
     "concurrently": "^4.1.0",
     "dotenv": "^6.2.0",
     "eslint": "^5.11.1",
@@ -70,6 +75,7 @@
     "lint-staged": "^8.1.0",
     "mocha": "^5.2.0",
     "nodemon": "^1.18.9",
+    "nyc": "^13.1.0",
     "prettier": "^1.15.3"
   }
 }

@@ -11,7 +11,7 @@ import mongoose from 'mongoose';
 import { apiV1, setup, teardown, resetDB } from '../testHelpers/testSetup';
 import {
   cloudinaryPostMock,
-  cloudinaryTempFileCleanup,
+  cloudinaryCleanup,
 } from '../testHelpers/images/imageHelpers';
 import app from '../../index';
 import User from '../../api/user/userModel';
@@ -767,14 +767,17 @@ describe('/users', function() {
   describe('/:id/images', function() {
     // Mock cloudinaryPost for testing without hitting the API
     before(cloudinaryPostMock);
+    // Clean up mock &
     // Delete temporary image files from server
-    after(cloudinaryTempFileCleanup);
+    after(cloudinaryCleanup);
 
     describe('GET', function() {
       it('needs jwt authorization', function() {
         return createNewUser
           .then(async function(res) {
-            const createdUser = await User.find({ username: user.username });
+            const createdUser = await User.find({
+              username: user.username,
+            });
 
             return request(app)
               .get(`${apiV1}/users/${createdUser[0]._id}/images`)
@@ -795,12 +798,19 @@ describe('/users', function() {
         return createNewUser
           .then(async function(res) {
             token = res.body.data.token;
-            const createdUser = await User.find({ username: user.username });
+            const createdUser = await User.find({
+              username: user.username,
+            });
 
             return request(app)
               .post(`${apiV1}/users/${createdUser[0]._id}/images`)
               .attach('image', image)
-              .set('Authorization', `Bearer ${token}`)
+              .set(
+                'Authorization',
+                `Bearer ${token}`,
+                'Accept',
+                'application/json'
+              )
               .expect('Content-Type', /json/);
           })
           .then(function(res) {
@@ -833,7 +843,9 @@ describe('/users', function() {
 
         return createNewUser
           .then(async function(res) {
-            const createdUser = await User.find({ username: user.username });
+            const createdUser = await User.find({
+              username: user.username,
+            });
 
             return request(app)
               .post(`${apiV1}/users/${createdUser[0]._id}/images`)
@@ -853,12 +865,19 @@ describe('/users', function() {
         return createNewUser
           .then(async function(res) {
             const token = res.body.data.token;
-            const createdUser = await User.find({ username: user.username });
+            const createdUser = await User.find({
+              username: user.username,
+            });
 
             return request(app)
               .post(`${apiV1}/users/${createdUser[0]._id}/images`)
               .attach('image', image)
-              .set('Authorization', `Bearer ${token}`)
+              .set(
+                'Authorization',
+                `Bearer ${token}`,
+                'Accept',
+                'application/json'
+              )
               .expect('Content-Type', /json/);
           })
           .then(function(res) {
@@ -878,12 +897,19 @@ describe('/users', function() {
         return createNewUser
           .then(async function(res) {
             const token = res.body.data.token;
-            const createdUser = await User.find({ username: user.username });
+            const createdUser = await User.find({
+              username: user.username,
+            });
 
             return request(app)
               .post(`${apiV1}/users/${createdUser[0]._id}/images`)
               .attach('image', image)
-              .set('Authorization', `Bearer ${token}`)
+              .set(
+                'Authorization',
+                `Bearer ${token}`,
+                'Accept',
+                'application/json'
+              )
               .expect('Content-Type', /json/);
           })
           .then(function(res) {
