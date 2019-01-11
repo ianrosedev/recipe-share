@@ -7,9 +7,9 @@
 
 Some of the stuff currently being worked on...
 
+- ✅ Base server setup
 - ✅ Travis CI
-- ✅ Basic server setup
-- ☑️ Code coverage
+- ✅ Code coverage
 - ☑️ Finish up API
 - ☑️ Server Tests
 - ☑️ Add front end
