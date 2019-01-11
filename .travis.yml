@@ -15,4 +15,5 @@ script:
   - npm run lint
   - npm run test-ci
 after_success:
-  - npm run coverage-report
+  - npm run coverage-report-server
+  - npm run coverage-report-client
