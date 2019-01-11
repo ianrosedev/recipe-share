@@ -11,7 +11,7 @@ node_modules/
 # Testing
 /coverage
 .nyc_output
-coverage.lcov
+*.lcov
 
 # Enviorment
 *.env
