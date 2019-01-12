@@ -13,7 +13,7 @@ import {
 } from '../testHelpers/images/imageHelpers';
 import app from '../../index';
 
-describe.only('/recipes', function() {
+describe('/recipes', function() {
   let createNewUser;
   let recipe;
   let notes;
