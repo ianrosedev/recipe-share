@@ -35,6 +35,12 @@ describe('/users', function() {
       profileImage: faker.image.avatar(),
     };
 
+    createNewUser = request(app)
+      .post(`${apiV1}/users`)
+      .send(user)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/);
+
     recipe = {
       name: faker.lorem.words(),
       snippet: faker.lorem.sentence(),
@@ -45,13 +51,6 @@ describe('/users', function() {
         faker.lorem.paragraph(),
       ],
     };
-
-    // Create new user
-    createNewUser = request(app)
-      .post(`${apiV1}/users`)
-      .send(user)
-      .set('Accept', 'application/json')
-      .expect('Content-Type', /json/);
   });
   after(teardown);
   afterEach(resetDB);
