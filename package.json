@@ -15,7 +15,7 @@
   "main": "index.js",
   "scripts": {
     "coverage-client": "CI=true SKIP_PREFLIGHT_CHECK=true npm run coverage --prefix client",
-    "coverage-report-client": "npm run coveage-client && codecov",
+    "coverage-report-client": "npm run coverage-client && codecov",
     "coverage-report-server": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "coverage-server": "nyc npm run test-server-ci",
     "format": "prettier --write \"./**/*.{js, json, html, css, scss, md}\"",

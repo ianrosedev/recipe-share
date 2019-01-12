@@ -8,10 +8,8 @@ import request from 'supertest';
 import faker from 'faker';
 import { apiV1, setup, teardown, resetDB } from '../testHelpers/testSetup';
 import app from '../../index';
-import User from '../../api/user/userModel';
 
 describe('/reviews', function() {
-  let user;
   let createNewUser;
   let recipe;
   let review;
@@ -19,7 +17,7 @@ describe('/reviews', function() {
   before(setup);
   beforeEach(() => {
     // Data is different for each test
-    user = {
+    const user = {
       username: faker.name.findName(),
       email: faker.internet.email(),
       password: faker.internet.password(),
@@ -27,6 +25,12 @@ describe('/reviews', function() {
       snippet: faker.lorem.sentence(),
       profileImage: faker.image.avatar(),
     };
+
+    createNewUser = request(app)
+      .post(`${apiV1}/users`)
+      .send(user)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/);
 
     recipe = {
       name: faker.lorem.words(),
@@ -43,13 +47,6 @@ describe('/reviews', function() {
       text: faker.lorem.paragraph(),
       rating: 3,
     };
-
-    // Create new user
-    createNewUser = request(app)
-      .post(`${apiV1}/users`)
-      .send(user)
-      .set('Accept', 'application/json')
-      .expect('Content-Type', /json/);
   });
   after(teardown);
   afterEach(resetDB);
@@ -60,12 +57,11 @@ describe('/reviews', function() {
         let token;
 
         return createNewUser
-          .then(async function(res) {
+          .then(function(res) {
             token = res.body.data.token;
-            const createdUser = await User.find({ username: user.username });
 
             return request(app)
-              .post(`${apiV1}/users/${createdUser[0]._id}/recipes`)
+              .post(`${apiV1}/recipes`)
               .send(recipe)
               .set(
                 'Authorization',
@@ -114,12 +110,11 @@ describe('/reviews', function() {
         let reviewId;
 
         return createNewUser
-          .then(async function(res) {
+          .then(function(res) {
             token = res.body.data.token;
-            const createdUser = await User.find({ username: user.username });
 
             return request(app)
-              .post(`${apiV1}/users/${createdUser[0]._id}/recipes`)
+              .post(`${apiV1}/recipes`)
               .send(recipe)
               .set(
                 'Authorization',
@@ -168,12 +163,11 @@ describe('/reviews', function() {
         let token;
 
         return createNewUser
-          .then(async function(res) {
+          .then(function(res) {
             token = res.body.data.token;
-            const createdUser = await User.find({ username: user.username });
 
             return request(app)
-              .post(`${apiV1}/users/${createdUser[0]._id}/recipes`)
+              .post(`${apiV1}/recipes`)
               .send(recipe)
               .set(
                 'Authorization',
@@ -217,12 +211,11 @@ describe('/reviews', function() {
         let token;
 
         return createNewUser
-          .then(async function(res) {
+          .then(function(res) {
             token = res.body.data.token;
-            const createdUser = await User.find({ username: user.username });
 
             return request(app)
-              .post(`${apiV1}/users/${createdUser[0]._id}/recipes`)
+              .post(`${apiV1}/recipes`)
               .send(recipe)
               .set(
                 'Authorization',
@@ -274,12 +267,11 @@ describe('/reviews', function() {
         let token;
 
         return createNewUser
-          .then(async function(res) {
+          .then(function(res) {
             token = res.body.data.token;
-            const createdUser = await User.find({ username: user.username });
 
             return request(app)
-              .post(`${apiV1}/users/${createdUser[0]._id}/recipes`)
+              .post(`${apiV1}/recipes`)
               .send(recipe)
               .set(
                 'Authorization',
@@ -323,12 +315,10 @@ describe('/reviews', function() {
         let reviewId;
 
         return createNewUser
-          .then(async function(res) {
+          .then(function(res) {
             token = res.body.data.token;
-            const createdUser = await User.find({ username: user.username });
-
             return request(app)
-              .post(`${apiV1}/users/${createdUser[0]._id}/recipes`)
+              .post(`${apiV1}/recipes`)
               .send(recipe)
               .set(
                 'Authorization',

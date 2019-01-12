@@ -10,14 +10,13 @@ import { apiV1, setup, teardown, resetDB } from '../testHelpers/testSetup';
 import app from '../../index';
 
 describe('/tags', function() {
-  let user;
   let createNewUser;
   let tag;
 
   before(setup);
   beforeEach(() => {
     // Data is different for each test
-    user = {
+    const user = {
       username: faker.name.findName(),
       email: faker.internet.email(),
       password: faker.internet.password(),
@@ -26,16 +25,15 @@ describe('/tags', function() {
       profileImage: faker.image.avatar(),
     };
 
-    tag = {
-      name: faker.lorem.word(),
-    };
-
-    // Create new user
     createNewUser = request(app)
       .post(`${apiV1}/users`)
       .send(user)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/);
+
+    tag = {
+      name: faker.lorem.word(),
+    };
   });
   after(teardown);
   afterEach(resetDB);
