@@ -6,7 +6,7 @@
 import expect from 'expect';
 import request from 'supertest';
 import faker from 'faker';
-import { apiV1, setup, teardown, resetDB } from '../testHelpers/testSetup';
+import { apiV1, setup, teardown, resetDB } from '../../test/setup';
 import app from '../../index';
 
 describe('/notes', function() {

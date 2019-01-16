@@ -1,10 +1,10 @@
 import isEmail from 'isemail';
 import { signToken } from './auth';
-import User from '../api/user/userModel';
-import smtpTransport from '../mail/mail';
+import smtpTransport from '../mail';
 import { asyncMiddleware } from '../helpers/async';
 import { errorResponse } from '../helpers/error';
 import { dataResponse } from '../helpers/response';
+import User from '../api/user/userModel';
 
 const loginPost = (req, res) => {
   const token = signToken(req.user._id);

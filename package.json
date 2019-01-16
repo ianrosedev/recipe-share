@@ -30,8 +30,8 @@
     "test-ci": "concurrently \"npm run coverage-server\" \"npm run coverage-client\"",
     "test-client": "npm test --prefix client",
     "test-client-ci": "CI=true SKIP_PREFLIGHT_CHECK=true npm test --prefix client",
-    "test-server": "NODE_ENV=test mocha -r 'dotenv/config' -r esm -w -s 1000 --recursive server/test || exit 0",
-    "test-server-ci": "NODE_ENV=test mocha -r 'dotenv/config' -r esm -t 20000 -s 1000 --recursive --exit server/test"
+    "test-server": "NODE_ENV=test mocha -r 'dotenv/config' -r esm -w -s 1000 'server/{,!(node_modules)/**}/*.test.js' || exit 0",
+    "test-server-ci": "NODE_ENV=test mocha -r 'dotenv/config' -r esm -t 20000 -s 1000 --exit 'server/{,!(node_modules)/**}/*.test.js'"
   },
   "husky": {
     "hooks": {
