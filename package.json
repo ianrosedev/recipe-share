@@ -30,8 +30,8 @@
     "test-ci": "concurrently \"npm run coverage-server\" \"npm run coverage-client\"",
     "test-client": "npm test --prefix client",
     "test-client-ci": "CI=true SKIP_PREFLIGHT_CHECK=true npm test --prefix client",
-    "test-server": "NODE_ENV=test mocha -r 'dotenv/config' -r esm -w -s 1000 --recursive server/test || exit 0",
-    "test-server-ci": "NODE_ENV=test mocha -r 'dotenv/config' -r esm -t 20000 -s 1000 --recursive --exit server/test"
+    "test-server": "NODE_ENV=test mocha -r 'dotenv/config' -r esm -w -s 1000 'server/{,!(node_modules)/**}/*.test.js' || exit 0",
+    "test-server-ci": "NODE_ENV=test mocha -r 'dotenv/config' -r esm -t 20000 -s 1000 --exit 'server/{,!(node_modules)/**}/*.test.js'"
   },
   "husky": {
     "hooks": {
@@ -63,15 +63,15 @@
     "codecov": "^3.1.0",
     "concurrently": "^4.1.0",
     "dotenv": "^6.2.0",
-    "eslint": "^5.11.1",
+    "eslint": "^5.12.0",
     "eslint-config-airbnb": "^17.1.0",
     "eslint-config-prettier": "^3.3.0",
     "eslint-plugin-babel": "^5.3.0",
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-jsx-a11y": "^6.1.2",
-    "eslint-plugin-prettier": "^3.0.0",
-    "eslint-plugin-react": "^7.11.1",
-    "husky": "^1.2.1",
+    "eslint-plugin-prettier": "^3.0.1",
+    "eslint-plugin-react": "^7.12.3",
+    "husky": "^1.3.1",
     "lint-staged": "^8.1.0",
     "mocha": "^5.2.0",
     "nodemon": "^1.18.9",

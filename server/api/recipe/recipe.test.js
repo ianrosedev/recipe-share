@@ -6,11 +6,11 @@
 import expect from 'expect';
 import request from 'supertest';
 import faker from 'faker';
-import { apiV1, setup, teardown, resetDB } from '../testHelpers/testSetup';
+import { apiV1, setup, teardown, resetDB } from '../../test/setup';
 import {
   cloudinaryPostMock,
   cloudinaryCleanup,
-} from '../testHelpers/images/imageHelpers';
+} from '../../test/helpers/images/imageHelpers';
 import app from '../../index';
 
 describe('/recipes', function() {
@@ -691,7 +691,7 @@ describe('/recipes', function() {
     // Delete temporary image files from server
     after(cloudinaryCleanup);
 
-    let image = 'server/test/testHelpers/images/images/pinkPanther.jpg';
+    let image = 'server/test/helpers/images/images/pinkPanther.jpg';
 
     describe('GET', function() {
       it('returns an array of images', function() {
@@ -828,7 +828,7 @@ describe('/recipes', function() {
 
       it('rejects unauthorized file types', function() {
         // .gif
-        image = 'server/test/testHelpers/images/images/evilBaby.gif';
+        image = 'server/test/helpers/images/images/evilBaby.gif';
         let token;
         let recipeId;
 
