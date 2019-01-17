@@ -40,7 +40,7 @@ describe('/tags', function() {
 
   describe('/', function() {
     describe('GET', function() {
-      it('returns an array of tags', function() {
+      it('returns an array of all tags', function() {
         let token;
 
         return createNewUser
@@ -85,6 +85,7 @@ describe('/tags', function() {
           .then(function(res) {
             expect(res.status).toBe(401);
             expect(res.body.statusCode).toBe(401);
+            expect(res.body.error).toBe('Unauthorized');
             expect(res.body.message).toBe('Unauthorized');
           });
       });

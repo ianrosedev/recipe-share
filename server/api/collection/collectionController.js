@@ -71,57 +71,22 @@ const collectionPut = asyncMiddleware(async (req, res, next) => {
   const userId = req.user._id;
   const collectionId = req.params.id;
   const collectionToUpdate = await Collection.findById(collectionId);
-  const { body } = req;
-  const options = {};
+
+  if (!collectionToUpdate) {
+    errorResponse.searchNotFound('recipe');
+  }
 
   if (!userId.equals(collectionToUpdate.userId)) {
     errorResponse.unauthorized();
   }
 
-  if (
-    Object.prototype.hasOwnProperty.call(body, 'name') &&
-    body.name.length === 0
-  ) {
-    errorResponse.customBadRequest('Name cannot be empty');
-  }
-
-  if (body.name || Object.prototype.hasOwnProperty.call(body, 'isPrivate')) {
-    options.$set = {};
-
-    if (body.name) {
-      options.$set.name = body.name;
-    }
-
-    if (Object.prototype.hasOwnProperty.call(body, 'isPrivate')) {
-      options.$set.isPrivate = body.isPrivate;
-    }
-  }
-
-  if (body.addRecipe) {
-    // Make sure recipe is NOT in array
-    if (collectionToUpdate.recipes.includes(new ObjectId(body.addRecipe))) {
-      errorResponse.customBadRequest('Recipe already exists');
-    }
-
-    options.$push = { recipes: new ObjectId(body.addRecipe) };
-  }
-
-  if (body.removeRecipe) {
-    // Make sure recipe is in array
-    if (!collectionToUpdate.recipes.includes(new ObjectId(body.removeRecipe))) {
-      errorResponse.searchNotFound('recipe');
-    }
-
-    options.$pull = { recipes: body.removeRecipe };
-  }
-
   const updatedCollection = await Collection.findByIdAndUpdate(
     collectionId,
-    { ...options },
-    { new: true }
+    { $set: req.body },
+    { new: true, runValidators: true }
   );
 
-  res.json(dataResponse(updatedCollection));
+  res.json(dataResponse({ collection: updatedCollection }));
 });
 
 const collectionDelete = asyncMiddleware(async (req, res, next) => {

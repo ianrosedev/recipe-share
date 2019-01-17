@@ -53,7 +53,7 @@ describe('/reviews', function() {
 
   describe('/', function() {
     describe('GET', function() {
-      it('returns an array of reviews', function() {
+      it('returns an array of all reviews', function() {
         let token;
 
         return createNewUser
@@ -203,6 +203,7 @@ describe('/reviews', function() {
           .then(function(res) {
             expect(res.status).toBe(401);
             expect(res.body.statusCode).toBe(401);
+            expect(res.body.error).toBe('Unauthorized');
             expect(res.body.message).toBe('Unauthorized');
           });
       });
@@ -306,6 +307,7 @@ describe('/reviews', function() {
           .then(function(res) {
             expect(res.status).toBe(401);
             expect(res.body.statusCode).toBe(401);
+            expect(res.body.error).toBe('Unauthorized');
             expect(res.body.message).toBe('Unauthorized');
           });
       });

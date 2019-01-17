@@ -60,7 +60,7 @@ const notePut = asyncMiddleware(async (req, res, next) => {
   const notes = await Note.findOneAndUpdate(
     { userId, recipeId },
     { $set: req.body },
-    { new: true }
+    { new: true, runValidators: true }
   );
 
   if (!notes) {
