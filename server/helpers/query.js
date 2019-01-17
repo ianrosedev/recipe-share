@@ -51,29 +51,33 @@ export const validateQuery = (query, allowedParams) => {
   return allowedQueries;
 };
 
-const queryFind = async (model, options) => {
+// Helper for findAndSort
+// Exported for tesing only
+export const queryFind = async (model, options) => {
   /**
    * Params: model, options
    *
    * Options: {
-   *   createdAt: 'asc' || 'desc',
-   *   rating: 'asc' || 'desc',
-   *   stars: 1-5
+   *   match: {
+   *    stars: 1-5,
+   *    tags: 'strings',
+   *    inc: 'strings',
+   *    notInc: 'strings',
+   *   },
+   *   sort : {
+   *    createdAt: 'asc' || 'desc',
+   *    rating: 'asc' || 'desc'
+   *   }
    * }
    *
    * Required: model
    * */
   try {
-    const sort = options.options ? options.options.sort : {};
-    const match = options.match || {};
-
-    // Check for required options
     if (!model) {
-      throw new TypeError('`option: model` is required');
+      throw new TypeError('`model` is required');
     }
 
-    // Get data from database
-    // Handle error from database?
+    const { sort, match } = options;
     const results = await model.find(match).sort(sort);
 
     return results;
@@ -82,64 +86,78 @@ const queryFind = async (model, options) => {
   }
 };
 
-const queryFindAndPopulate = async (model, id, options = {}) => {
+// Helper for findAndSort
+// Exported for tesing only
+export const queryFindAndPopulate = async (model, id, path, options = {}) => {
   /**
-   * Params: model, id, options
+   * Params: model, id, path, options
    *
    * Options: {
-   *   path: path,
-   *   createdAt: 'asc' || 'desc',
-   *   rating: 'asc' || 'desc',
-   *   stars: 1-5
+   *   match: {
+   *    stars: 1-5,
+   *    tags: 'strings',
+   *    inc: 'strings',
+   *    notInc: 'strings',
+   *   },
+   *   sort : {
+   *    createdAt: 'asc' || 'desc',
+   *    rating: 'asc' || 'desc'
+   *   }
    * }
    *
-   * Required: model, id, options.path
+   * Required: model, id, path
    * */
   try {
-    const { path } = options;
-
-    // Check for required options
     if (!model) {
-      throw new TypeError('`option: model` is required');
+      throw new TypeError('`model` is required');
     }
 
     if (!id) {
-      throw new TypeError('`option: id` is required');
+      throw new TypeError('`id` is required');
     }
 
     if (!path) {
-      throw new TypeError('`option: path` is required');
+      throw new TypeError('`path` is required');
     }
 
-    // Get data from database
     const results = await model
       .findById(id)
       .select(`${path}`)
-      .populate(options);
+      .populate({
+        path,
+        match: options.match,
+        options: {
+          sort: options.sort,
+        },
+      });
 
-    return results;
+    // Set results to correct path
+    return results[path];
   } catch (err) {
     throw err;
   }
 };
 
-const queryPaginate = (res, data, offset = 0, limit = 20) => {
+// Helper for findAndSort
+// Exported for tesing only
+export const queryPaginate = (data, offset = 0, limit = 20) => {
   /**
-   * Params: res, data, offset, limit
+   * Params: data, offset, limit
    *
-   * Required: res, data
+   * Required: data
    * */
   try {
+    if (!data) {
+      throw new TypeError('`data` is required');
+    }
+
     offset = Number(offset);
     limit = Number(limit) + offset;
 
+    // If offset is out of bounds
+    // return null so error can be sent
     if (data.length > 0 && data.length <= offset) {
-      res.status(400).json({
-        statusCode: 400,
-        error: 'Bad Request',
-        message: 'Offset out of bounds',
-      });
-      return;
+      return null;
     }
 
     return data.slice(offset, limit);
@@ -152,7 +170,7 @@ export const findAndSort = async (
   req,
   res,
   next,
-  { model, id, path, as, query, filter }
+  { model, id, path, as, query = {}, filter }
 ) => {
   /**
    * Params: req, res, next, options
@@ -160,11 +178,15 @@ export const findAndSort = async (
    * Options: {
    *   model,
    *   path,
+   *   as,
    *   id,
    *   query {
    *     createdAt: 'asc' || 'desc',
    *     rating: 'asc' || 'desc',
    *     stars: 1-5,
+   *     tags: 'strings',
+   *     inc: 'strings',
+   *     notInc: 'strings',
    *     filter: function
    *   }
    * }
@@ -172,23 +194,23 @@ export const findAndSort = async (
    * Required: req, res, next, options.model
    * */
   try {
-    const queryOptions = path ? { path } : {};
-
-    // Check for required options
+    // Check for required params
     if (!model) {
-      throw new Error('`option: model` is required');
+      throw new Error('`model` is required');
     }
 
     // Build query options
+    const queryOptions = {};
+
     if (query.rating || query.createdAt) {
-      queryOptions.options = { sort: {} };
+      queryOptions.sort = {};
 
       if (query.rating) {
-        queryOptions.options.sort.rating = query.rating;
+        queryOptions.sort.rating = query.rating;
       }
 
       if (query.createdAt) {
-        queryOptions.options.sort.createdAt = query.createdAt;
+        queryOptions.sort.createdAt = query.createdAt;
       }
     }
 
@@ -233,16 +255,13 @@ export const findAndSort = async (
       results = await queryFind(model, queryOptions);
     } else {
       // Find nested query
-      results = await queryFindAndPopulate(model, id, queryOptions);
+      results = await queryFindAndPopulate(model, id, path, queryOptions);
     }
 
     // Check that result was found
     if (!results) {
       errorResponse.customBadRequest();
     }
-
-    // Set results to correct path
-    results = results[path] || results;
 
     // Filter results if option is present
     if (filter) {
@@ -262,19 +281,15 @@ export const findAndSort = async (
       return;
     }
 
-    // Paginate and send response
-    const paginatedResults = queryPaginate(
-      res,
-      results,
-      query.offset,
-      query.limit
-    );
+    // Paginate
+    const paginatedResults = queryPaginate(results, query.offset, query.limit);
 
-    // Return if queryPaginate responds to error
+    // If queryPaginate responds with error
     if (!paginatedResults) {
-      return;
+      errorResponse.customBadRequest('Offset out of bounds');
     }
 
+    // Paginated response
     res.json(
       dataResponse({
         length: results.length,
