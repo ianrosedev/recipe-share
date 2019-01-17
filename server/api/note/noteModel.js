@@ -22,4 +22,6 @@ const schema = new Schema(
   }
 );
 
-export default mongoose.model('Note', schema);
+// Checking for existing model keeps
+// tests from having an OverwriteModelError
+export default mongoose.models.Note || mongoose.model('Note', schema);

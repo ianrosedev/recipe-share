@@ -34,4 +34,6 @@ const schema = new Schema(
   }
 );
 
-export default mongoose.model('Review', schema);
+// Checking for existing model keeps
+// tests from having an OverwriteModelError
+export default mongoose.models.Review || mongoose.model('Review', schema);

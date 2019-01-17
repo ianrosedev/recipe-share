@@ -31,4 +31,7 @@ const schema = new Schema(
   }
 );
 
-export default mongoose.model('Collection', schema);
+// Checking for existing model keeps
+// tests from having an OverwriteModelError
+export default mongoose.models.Collection ||
+  mongoose.model('Collection', schema);
