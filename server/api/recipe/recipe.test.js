@@ -133,6 +133,7 @@ describe('/recipes', function() {
           .then(function(res) {
             expect(res.status).toBe(401);
             expect(res.body.statusCode).toBe(401);
+            expect(res.body.error).toBe('Unauthorized');
             expect(res.body.message).toBe('Unauthorized');
           });
       });
@@ -329,6 +330,7 @@ describe('/recipes', function() {
           .then(function(res) {
             expect(res.status).toBe(401);
             expect(res.body.statusCode).toBe(401);
+            expect(res.body.error).toBe('Unauthorized');
             expect(res.body.message).toBe('Unauthorized');
           });
       });
@@ -465,6 +467,7 @@ describe('/recipes', function() {
           .then(function(res) {
             expect(res.status).toBe(401);
             expect(res.body.statusCode).toBe(401);
+            expect(res.body.error).toBe('Unauthorized');
             expect(res.body.message).toBe('Unauthorized');
           });
       });
@@ -776,6 +779,7 @@ describe('/recipes', function() {
           .then(function(res) {
             expect(res.status).toBe(401);
             expect(res.body.statusCode).toBe(401);
+            expect(res.body.error).toBe('Unauthorized');
             expect(res.body.message).toBe('Unauthorized');
           });
       });
@@ -903,6 +907,7 @@ describe('/recipes', function() {
           .then(function(res) {
             expect(res.status).toBe(401);
             expect(res.body.statusCode).toBe(401);
+            expect(res.body.error).toBe('Unauthorized');
             expect(res.body.message).toBe('Unauthorized');
           });
       });
@@ -1006,6 +1011,7 @@ describe('/recipes', function() {
           .then(function(res) {
             expect(res.status).toBe(401);
             expect(res.body.statusCode).toBe(401);
+            expect(res.body.error).toBe('Unauthorized');
             expect(res.body.message).toBe('Unauthorized');
           });
       });
@@ -1147,6 +1153,7 @@ describe('/recipes', function() {
           .then(function(res) {
             expect(res.status).toBe(401);
             expect(res.body.statusCode).toBe(401);
+            expect(res.body.error).toBe('Unauthorized');
             expect(res.body.message).toBe('Unauthorized');
           });
       });
@@ -1247,6 +1254,7 @@ describe('/recipes', function() {
           .then(function(res) {
             expect(res.status).toBe(401);
             expect(res.body.statusCode).toBe(401);
+            expect(res.body.error).toBe('Unauthorized');
             expect(res.body.message).toBe('Unauthorized');
           });
       });

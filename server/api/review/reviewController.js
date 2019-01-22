@@ -50,7 +50,7 @@ const reviewPut = asyncMiddleware(async (req, res, next) => {
   const updatedReview = await Review.findByIdAndUpdate(
     reviewId,
     { $set: req.body },
-    { new: true }
+    { new: true, runValidators: true }
   );
 
   res.json(dataResponse(updatedReview));

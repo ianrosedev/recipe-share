@@ -109,7 +109,7 @@ const recipePut = asyncMiddleware(async (req, res, next) => {
   const updatedRecipe = await Recipe.findByIdAndUpdate(
     recipeId,
     { $set: req.body },
-    { new: true }
+    { new: true, runValidators: true }
   );
 
   res.json(dataResponse({ recipe: updatedRecipe }));

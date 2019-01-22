@@ -77,6 +77,7 @@ describe('/users', function() {
                     return createNewUser.then(function(res) {
                       expect(res.status).toBe(401);
                       expect(res.body.statusCode).toBe(401);
+                      expect(res.body.error).toBe('Unauthorized');
                       expect(res.body.message).toBe('Duplicate');
                     });
                   }),
@@ -101,6 +102,7 @@ describe('/users', function() {
           .then(function(res) {
             expect(res.status).toBe(401);
             expect(res.body.statusCode).toBe(401);
+            expect(res.body.error).toBe('Unauthorized');
             expect(res.body.message).toBe('Unauthorized');
           });
       });
@@ -141,6 +143,7 @@ describe('/users', function() {
           .then(function(res) {
             expect(res.status).toBe(401);
             expect(res.body.statusCode).toBe(401);
+            expect(res.body.error).toBe('Unauthorized');
             expect(res.body.message).toBe('Unauthorized');
           });
       });
@@ -177,6 +180,7 @@ describe('/users', function() {
           .then(function(res) {
             expect(res.status).toBe(401);
             expect(res.body.statusCode).toBe(401);
+            expect(res.body.error).toBe('Unauthorized');
             expect(res.body.message).toBe('Unauthorized');
           });
       });
@@ -325,6 +329,7 @@ describe('/users', function() {
           .then(function(res) {
             expect(res.status).toBe(401);
             expect(res.body.statusCode).toBe(401);
+            expect(res.body.error).toBe('Unauthorized');
             expect(res.body.message).toBe('Unauthorized');
           });
       });
@@ -465,11 +470,12 @@ describe('/users', function() {
           .then(function(res) {
             expect(res.status).toBe(401);
             expect(res.body.statusCode).toBe(401);
+            expect(res.body.error).toBe('Unauthorized');
             expect(res.body.message).toBe('Unauthorized');
           });
       });
 
-      it('returns an array of collections', function() {
+      it('returns an array of all collections', function() {
         const collection = {
           name: faker.lorem.words(),
           isPrivate: true,
@@ -565,6 +571,7 @@ describe('/users', function() {
           .then(function(res) {
             expect(res.status).toBe(401);
             expect(res.body.statusCode).toBe(401);
+            expect(res.body.error).toBe('Unauthorized');
             expect(res.body.message).toBe('Unauthorized');
           });
       });
@@ -786,6 +793,7 @@ describe('/users', function() {
           .then(function(res) {
             expect(res.status).toBe(401);
             expect(res.body.statusCode).toBe(401);
+            expect(res.body.error).toBe('Unauthorized');
             expect(res.body.message).toBe('Unauthorized');
           });
       });
@@ -854,6 +862,7 @@ describe('/users', function() {
           .then(function(res) {
             expect(res.status).toBe(401);
             expect(res.body.statusCode).toBe(401);
+            expect(res.body.error).toBe('Unauthorized');
             expect(res.body.message).toBe('Unauthorized');
           });
       });
