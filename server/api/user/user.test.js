@@ -8,13 +8,13 @@ import expect from 'expect';
 import request from 'supertest';
 import faker from 'faker';
 import mongoose from 'mongoose';
-import { apiV1, setup, teardown, resetDB } from '../testHelpers/testSetup';
+import { apiV1, setup, teardown, resetDB } from '../../test/setup';
 import {
   cloudinaryPostMock,
   cloudinaryCleanup,
-} from '../testHelpers/images/imageHelpers';
+} from '../../test/helpers/images/imageHelpers';
 import app from '../../index';
-import User from '../../api/user/userModel';
+import User from './userModel';
 
 const { ObjectId } = mongoose.Types;
 
@@ -35,6 +35,12 @@ describe('/users', function() {
       profileImage: faker.image.avatar(),
     };
 
+    createNewUser = request(app)
+      .post(`${apiV1}/users`)
+      .send(user)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/);
+
     recipe = {
       name: faker.lorem.words(),
       snippet: faker.lorem.sentence(),
@@ -45,13 +51,6 @@ describe('/users', function() {
         faker.lorem.paragraph(),
       ],
     };
-
-    // Create new user
-    createNewUser = request(app)
-      .post(`${apiV1}/users`)
-      .send(user)
-      .set('Accept', 'application/json')
-      .expect('Content-Type', /json/);
   });
   after(teardown);
   afterEach(resetDB);
@@ -78,6 +77,7 @@ describe('/users', function() {
                     return createNewUser.then(function(res) {
                       expect(res.status).toBe(401);
                       expect(res.body.statusCode).toBe(401);
+                      expect(res.body.error).toBe('Unauthorized');
                       expect(res.body.message).toBe('Duplicate');
                     });
                   }),
@@ -102,6 +102,7 @@ describe('/users', function() {
           .then(function(res) {
             expect(res.status).toBe(401);
             expect(res.body.statusCode).toBe(401);
+            expect(res.body.error).toBe('Unauthorized');
             expect(res.body.message).toBe('Unauthorized');
           });
       });
@@ -142,6 +143,7 @@ describe('/users', function() {
           .then(function(res) {
             expect(res.status).toBe(401);
             expect(res.body.statusCode).toBe(401);
+            expect(res.body.error).toBe('Unauthorized');
             expect(res.body.message).toBe('Unauthorized');
           });
       });
@@ -178,6 +180,7 @@ describe('/users', function() {
           .then(function(res) {
             expect(res.status).toBe(401);
             expect(res.body.statusCode).toBe(401);
+            expect(res.body.error).toBe('Unauthorized');
             expect(res.body.message).toBe('Unauthorized');
           });
       });
@@ -326,6 +329,7 @@ describe('/users', function() {
           .then(function(res) {
             expect(res.status).toBe(401);
             expect(res.body.statusCode).toBe(401);
+            expect(res.body.error).toBe('Unauthorized');
             expect(res.body.message).toBe('Unauthorized');
           });
       });
@@ -466,11 +470,12 @@ describe('/users', function() {
           .then(function(res) {
             expect(res.status).toBe(401);
             expect(res.body.statusCode).toBe(401);
+            expect(res.body.error).toBe('Unauthorized');
             expect(res.body.message).toBe('Unauthorized');
           });
       });
 
-      it('returns an array of collections', function() {
+      it('returns an array of all collections', function() {
         const collection = {
           name: faker.lorem.words(),
           isPrivate: true,
@@ -566,6 +571,7 @@ describe('/users', function() {
           .then(function(res) {
             expect(res.status).toBe(401);
             expect(res.body.statusCode).toBe(401);
+            expect(res.body.error).toBe('Unauthorized');
             expect(res.body.message).toBe('Unauthorized');
           });
       });
@@ -787,12 +793,13 @@ describe('/users', function() {
           .then(function(res) {
             expect(res.status).toBe(401);
             expect(res.body.statusCode).toBe(401);
+            expect(res.body.error).toBe('Unauthorized');
             expect(res.body.message).toBe('Unauthorized');
           });
       });
 
       it('returns an array of images', function() {
-        const image = 'server/test/testHelpers/images/images/pinkPanther.jpg';
+        const image = 'server/test/helpers/images/images/pinkPanther.jpg';
         let token;
 
         return createNewUser
@@ -839,7 +846,7 @@ describe('/users', function() {
 
     describe('POST', function() {
       it('needs jwt authorization', function() {
-        const image = 'server/test/testHelpers/images/images/pinkPanther.jpg';
+        const image = 'server/test/helpers/images/images/pinkPanther.jpg';
 
         return createNewUser
           .then(async function(res) {
@@ -855,12 +862,13 @@ describe('/users', function() {
           .then(function(res) {
             expect(res.status).toBe(401);
             expect(res.body.statusCode).toBe(401);
+            expect(res.body.error).toBe('Unauthorized');
             expect(res.body.message).toBe('Unauthorized');
           });
       });
 
       it('adds an image and updates the user', function() {
-        const image = 'server/test/testHelpers/images/images/pinkPanther.jpg';
+        const image = 'server/test/helpers/images/images/pinkPanther.jpg';
 
         return createNewUser
           .then(async function(res) {
@@ -892,7 +900,7 @@ describe('/users', function() {
 
       it('rejects unauthorized file types', function() {
         // .gif
-        const image = 'server/test/testHelpers/images/images/evilBaby.gif';
+        const image = 'server/test/helpers/images/images/evilBaby.gif';
 
         return createNewUser
           .then(async function(res) {

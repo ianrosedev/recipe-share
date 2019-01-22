@@ -28,16 +28,17 @@
     "isemail": "^3.2.0",
     "jsonwebtoken": "^8.4.0",
     "lodash": "^4.17.11",
-    "mongoose": "^5.4.1",
+    "mongoose": "^5.4.3",
     "morgan": "^1.9.1",
     "multer": "^1.4.1",
-    "nodemailer": "^4.7.0",
+    "nodemailer": "^5.1.1",
     "nodemailer-express-handlebars": "^3.0.0"
   },
   "devDependencies": {
     "expect": "^23.6.0",
     "faker": "^4.1.0",
-    "mongodb-memory-server": "^2.9.1",
+    "mongodb-memory-server": "^2.9.3",
+    "node-mocks-http": "^1.7.3",
     "sinon": "^7.2.2",
     "supertest": "^3.3.0"
   }

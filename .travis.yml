@@ -7,7 +7,7 @@ branches:
   only:
     - master
     - development
-    - /^v\d+\.\d+\.\d+(-(alpha|beta).*)?$/ # Releases
+    - /^release\/v\d+\.\d+\.\d+(-(alpha|beta).*)?$/ # Releases
 install:
   - npm run install-all
 script:

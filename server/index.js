@@ -6,8 +6,8 @@ import connectToDB from './db';
 import appMiddleware from './middleware/appMiddleware';
 import errorMiddleware from './middleware/errorMiddleware';
 import notFound from './middleware/notFound';
-import authRouter from './auth/authRouter';
-import apiRouter from './api/apiRouter';
+import authRouter from './auth';
+import apiRouter from './api';
 
 const app = express();
 

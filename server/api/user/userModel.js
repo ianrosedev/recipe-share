@@ -84,4 +84,6 @@ schema.methods = {
   },
 };
 
-export default mongoose.model('User', schema);
+// Checking for existing model keeps
+// tests from having an OverwriteModelError
+export default mongoose.models.User || mongoose.model('User', schema);
