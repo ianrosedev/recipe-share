@@ -1,7 +1,8 @@
 # Recipe Share
 
-[![Build Status](https://travis-ci.com/ianrosedev/recipe-share.svg?branch=master)](https://travis-ci.com/ianrosedev/recipe-share)
-[![codecov](https://codecov.io/gh/ianrosedev/recipe-share/branch/master/graph/badge.svg)](https://codecov.io/gh/ianrosedev/recipe-share)
+[![build](https://img.shields.io/travis/com/ianrosedev/recipe-share.svg)](https://travis-ci.com/ianrosedev/recipe-share)
+[![coverage](https://img.shields.io/codecov/c/github/ianrosedev/recipe-share/master.svg)](https://codecov.io/gh/ianrosedev/recipe-share)
+[![release](https://img.shields.io/github/release-pre/ianrosedev/recipe-share.svg)](https://github.com/ianrosedev/recipe-share/releases)
 
 ## [WIP] - More coming soon
 
