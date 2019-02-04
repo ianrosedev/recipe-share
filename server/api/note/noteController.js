@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import { merge } from 'lodash';
 import Note from './noteModel';
 import User from '../user/userModel';
 import { asyncMiddleware } from '../../helpers/async';
@@ -29,11 +28,11 @@ const notePost = asyncMiddleware(async (req, res, next) => {
     errorResponse.customBadRequest('Notes already exist');
   }
 
-  const noteWithAuthor = merge(
-    req.body,
-    { userId: new ObjectId(userId) },
-    { recipeId: new ObjectId(recipeId) }
-  );
+  const noteWithAuthor = {
+    ...req.body,
+    userId: new ObjectId(userId),
+    recipeId: new ObjectId(recipeId),
+  };
   const newNote = new Note(noteWithAuthor);
   const createdNote = await newNote.save();
 

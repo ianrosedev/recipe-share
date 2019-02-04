@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import { merge } from 'lodash';
 import Collection from './collectionModel';
 import User from '../user/userModel';
 import { asyncMiddleware } from '../../helpers/async';
@@ -39,9 +38,7 @@ const collectionGetAll = asyncMiddleware(async (req, res, next) => {
 
 const collectionPost = asyncMiddleware(async (req, res, next) => {
   const userId = req.user._id;
-  const collectionWithUserId = merge(req.body, {
-    userId: new ObjectId(userId),
-  });
+  const collectionWithUserId = { ...req.body, userId: new ObjectId(userId) };
   const newCollection = new Collection(collectionWithUserId);
   const createdCollection = await newCollection.save();
 

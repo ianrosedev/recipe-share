@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 import fs from 'fs';
 import { promisify } from 'util';
-import { uniq } from 'lodash';
 import cloudinary from '../cloudinary';
 
 const { ObjectId } = mongoose.Types;
@@ -31,7 +30,7 @@ export const formatImages = images => {
   }
 
   if (Array.isArray(images)) {
-    return uniq(images).map(img => ObjectId(img));
+    return Array.from(new Set(images)).map(img => ObjectId(img));
   }
 
   return [];

@@ -1,4 +1,3 @@
-import { merge } from 'lodash';
 import User from './userModel';
 import recipeController from '../recipe/recipeController';
 import collectionController from '../collection/collectionController';
@@ -46,7 +45,9 @@ const userPut = asyncMiddleware(async (req, res, next) => {
     req.body.images = await formatImages(req.body.images);
   }
 
-  const update = merge(user, userUpdate);
+  // Use `Object.assign` instead of `spread`
+  // Spread is adding mongoose data
+  const update = Object.assign(user, userUpdate);
   const updatedUser = await user.save(update);
 
   res.json(dataResponse({ user: updatedUser }));
