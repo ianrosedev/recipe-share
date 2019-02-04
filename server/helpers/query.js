@@ -1,10 +1,16 @@
-import { pick, startCase } from 'lodash';
+import startCase from 'lodash.startcase';
 import Tag from '../api/tag/tagModel';
 import { errorResponse } from './error';
 import { dataResponse } from './response';
 
 export const validateQuery = (query, allowedParams) => {
-  const allowedQueries = pick(query, ...allowedParams);
+  const allowedQueries = allowedParams.reduce((obj, key) => {
+    if (query[key]) {
+      obj[key] = query[key];
+    }
+
+    return obj;
+  }, {});
   const {
     tags,
     inc,

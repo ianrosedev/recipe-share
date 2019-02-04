@@ -3,7 +3,6 @@
 // no-shadow: Allow use of same paramater name nested
 // prefer-destructuring: Assign to variable after getting data
 
-import { merge } from 'lodash';
 import expect from 'expect';
 import request from 'supertest';
 import faker from 'faker';
@@ -564,7 +563,7 @@ describe('/users', function() {
 
             return request(app)
               .post(`${apiV1}/users/${userId}/collections`)
-              .send(merge(collection, { recipes: [recipeId] }))
+              .send({ ...collection, recipes: [recipeId] })
               .set('Accept', 'application/json')
               .expect('Content-Type', /json/);
           })
@@ -606,7 +605,7 @@ describe('/users', function() {
 
             return request(app)
               .post(`${apiV1}/users/${userId}/collections`)
-              .send(merge(collection, { recipes: [recipeId] }))
+              .send({ ...collection, recipes: [recipeId] })
               .set(
                 'Authorization',
                 `Bearer ${token}`,
