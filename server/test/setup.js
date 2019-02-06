@@ -7,10 +7,7 @@ export const setup = async () => {
   mongoServer = new MongoMemoryServer();
   const mongoUri = await mongoServer.getConnectionString();
 
-  await mongoose.connect(
-    mongoUri,
-    err => err && console.log(err)
-  );
+  await mongoose.connect(mongoUri, err => err && console.log(err));
 };
 
 export const teardown = async () => {
