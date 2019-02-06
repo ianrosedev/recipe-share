@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import { merge } from 'lodash';
 import Recipe from './recipeModel';
 import User from '../user/userModel';
 import Review from '../review/reviewModel';
@@ -67,7 +66,7 @@ const recipePost = asyncMiddleware(async (req, res, next) => {
     req.body.images = formatImages(req.body.images);
   }
 
-  const recipeWithAuthor = merge(req.body, { userId: new ObjectId(userId) });
+  const recipeWithAuthor = { ...req.body, userId: new ObjectId(userId) };
   const newRecipe = new Recipe(recipeWithAuthor);
   const createdRecipe = await newRecipe.save();
 
